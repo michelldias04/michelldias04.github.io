@@ -1,0 +1,47 @@
+html, body{
+    height: 100%;
+    font-size: 1rem;
+    font-family: 'Baloo Bhaijaan 2', cursive;
+}
+
+.gradient{
+    background: rgb(9,16,39);
+    background: linear-gradient(135deg, rgba(9,16,39,1) 0%, rgba(0,156,216,1) 100%);
+}
+
+.header-text{
+    text-align: justify;
+}
+
+.page-header{
+    margin-top: 4rem;
+    font-size: 1.25rem;
+    color: #fff;
+}
+
+.feature{
+    color: #fff;
+}
+
+.feature-text{
+    text-align: justify;
+}
+
+.icon {
+    color: #fff;
+    height: 3rem;
+    width: 3rem;
+    font-size: 1.75rem;
+    border-radius: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gallery{
+    background-color: lightsteelblue;
+}
+
+.gallery img{
+    border-radius: 5%;
+}
