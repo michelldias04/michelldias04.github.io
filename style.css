@@ -1,0 +1,48 @@
+/* Estilos para o header */
+header {
+  background-color: transparent;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  height: 50px;
+}
+
+.logo {
+  vertical-align: middle;
+}
+
+nav a {
+  color: #131526;
+  margin-right: 30px;
+  text-decoration: none;
+  font-family: 'Carter One', cursive;
+}
+
+.social-icons img {
+  width: 20px;
+  margin-right: 10px;
+}
+
+/* Estilos para o conteúdo */
+body {
+  background-image: url(img/bg.jpg);
+  background-size: 100% 100%;
+  background-position: center;
+  height: 100vh;
+}
+
+/* Estilos para o footer */
+footer {
+  background-color: transparent;
+  color: #131526;
+  text-align: center;
+  padding: 3px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  font-size: 12px;
+}
+
+
