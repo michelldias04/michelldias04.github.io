@@ -32,6 +32,10 @@ body {
   height: 100vh;
 }
 
+.center-table {
+  margin: 0 auto;
+}
+
 /* Estilos para o footer */
 footer {
   background-color: transparent;
@@ -44,9 +48,3 @@ footer {
   width: 100%;
   font-size: 12px;
 }
-
-.center-table {
-  margin: 0 auto;
-}
-
-
