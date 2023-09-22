@@ -15,7 +15,7 @@ body {
 .heart {
     width: 100px;
     height: 100px;
-    background-image: url('coracao-fechado.png'); /* Imagem do coração fechado */
+    background-image: url('heart.png'); /* Imagem do coração fechado */
     background-size: cover;
     cursor: pointer;
 }
