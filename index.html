@@ -508,9 +508,22 @@
         let progressData = {};
         let unsubOnSnapshot = () => {};
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-stardew-tracker';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // --- CONFIGURAÇÃO DO FIREBASE ---
+        // IMPORTANTE: Cole aqui a configuração do SEU projeto Firebase que você pode
+        // obter no console do Firebase em "Configurações do projeto".
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_AUTH_DOMAIN",
+            projectId: "SEU_PROJECT_ID",
+            storageBucket: "SEU_STORAGE_BUCKET",
+            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+            appId: "SUA_APP_ID"
+        };
+        
+        // Deixamos estas variáveis como nulas, pois não estamos mais no ambiente original
+        const appId = firebaseConfig.projectId; // Usar o ID do projeto como App ID
+        const initialAuthToken = null;
+
 
         const loadingOverlay = document.getElementById('loading-overlay');
         const authStatusEl = document.getElementById('auth-status');
@@ -518,8 +531,12 @@
         const contentContainer = document.getElementById('tab-content');
         
         async function initializeFirebase() {
-            if (!firebaseConfig) {
-                authStatusEl.textContent = "Erro: Configuração do Firebase não encontrada.";
+            // Verifica se as chaves foram substituídas
+            if (!firebaseConfig || firebaseConfig.apiKey === "SUA_API_KEY") {
+                authStatusEl.innerHTML = `
+                    <p class="text-red-500 font-bold">Erro: Configuração do Firebase não encontrada.</p>
+                    <p class="text-xs">Por favor, siga as instruções para adicionar suas chaves do Firebase no código.</p>
+                `;
                 loadingOverlay.style.display = 'none';
                 return;
             }
@@ -564,7 +581,7 @@
         
         async function setupRealtimeListener() {
             unsubOnSnapshot(); // Unsubscribe from previous listener if it exists
-            const docRef = doc(db, `artifacts/${appId}/users/${userId}/stardew-progress/data`);
+            const docRef = doc(db, `stardew-tracker/${userId}/progress/data`);
             
             unsubOnSnapshot = onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
@@ -665,7 +682,7 @@
             row.classList.toggle('completed', checkbox.checked);
 
             try {
-                const docRef = doc(db, `artifacts/${appId}/users/${userId}/stardew-progress/data`);
+                const docRef = doc(db, `stardew-tracker/${userId}/progress/data`);
                 await setDoc(docRef, progressData, { merge: true });
             } catch (error) {
                 console.error("Erro ao salvar progresso: ", error);
