@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stardew Valley 100% Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilo para simular a fonte pixelada de Stardew Valley */
+        body {
+            font-family: 'Silkscreen', sans-serif;
+            background-image: url('https://stardewvalleywiki.com/mediawiki/images/5/5c/Main_Background.png');
+            background-size: cover;
+            background-attachment: fixed;
+            color: #40230e; /* Cor do texto principal (marrom escuro) */
+        }
+        /* Cor de fundo para os cards, simulando o menu do jogo */
+        .card-bg {
+            background-color: rgba(251, 237, 190, 0.95); /* Bege claro, semi-transparente */
+            border: 4px solid #ab7438;
+            box-shadow: 0 0 0 4px #40230e;
+        }
+        .tab-button {
+            transition: all 0.2s ease-in-out;
+            border-bottom: 4px solid transparent;
+        }
+        .tab-button.active {
+            color: #8c4a17;
+            border-bottom-color: #8c4a17;
+        }
+        .tab-button:hover {
+            transform: translateY(-2px);
+            color: #8c4a17;
+        }
+        /* Checkbox customizado */
+        input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background-color: #f3dca4;
+            border: 2px solid #ab7438;
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+        input[type="checkbox"]:checked {
+            background-color: #55a02e;
+            border-color: #3b7d2f;
+        }
+        input[type="checkbox"]:checked::after {
+            content: '✔';
+            color: #fff;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+        }
+        tr.completed td {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+        /* Scrollbar customizada */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fbebd6;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #ab7438;
+            border-radius: 20px;
+            border: 3px solid #fbebd6;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="text-white text-2xl animate-pulse">Carregando dados...</div>
+    </div>
+
+    <main class="max-w-7xl mx-auto card-bg rounded-lg p-4 md:p-6">
+        <!-- Cabeçalho -->
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-5xl font-bold tracking-wider">Guia da Perfeição</h1>
+            <p class="text-lg md:text-xl text-[#8c4a17]">Stardew Valley Tracker</p>
+            <div id="auth-status" class="mt-2 text-xs text-gray-600">Conectando...</div>
+        </header>
+
+        <!-- Navegação (Abas) -->
+        <nav class="flex flex-wrap justify-center border-b-4 border-[#ab7438] mb-6 gap-2 md:gap-4">
+            <button data-tab="dashboard" class="tab-button active text-sm md:text-lg p-2">Painel</button>
+            <button data-tab="community-center" class="tab-button text-sm md:text-lg p-2">Centro Comunitário</button>
+            <button data-tab="shipping" class="tab-button text-sm md:text-lg p-2">Itens Enviados</button>
+            <button data-tab="fish" class="tab-button text-sm md:text-lg p-2">Peixes</button>
+            <button data-tab="artifacts-minerals" class="tab-button text-sm md:text-lg p-2">Artefatos e Minerais</button>
+            <button data-tab="cooking" class="tab-button text-sm md:text-lg p-2">Culinária</button>
+            <button data-tab="crafting" class="tab-button text-sm md:text-lg p-2">Criação</button>
+        </nav>
+
+        <!-- Conteúdo das Abas -->
+        <div id="tab-content" class="min-h-[60vh]">
+            <!-- As seções serão injetadas aqui pelo JavaScript -->
+        </div>
+
+    </main>
+
+    <footer class="text-center mt-4 text-white text-opacity-80 text-sm">
+        <p>Criado com ❤️ para fazendeiros de Stardew Valley.</p>
+    </footer>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- DADOS COMPLETOS DO JOGO ---
+        const gameData = {
+            dashboard: {
+                title: 'Painel de Progresso',
+                categories: [
+                    { id: 'community-center', name: 'Centro Comunitário' },
+                    { id: 'shipping', name: 'Itens Enviados' },
+                    { id: 'fish', name: 'Peixes' },
+                    { id: 'artifacts-minerals', name: 'Artefatos e Minerais' },
+                    { id: 'cooking', name: 'Culinária' },
+                    { id: 'crafting', name: 'Criação' },
+                ]
+            },
+            'community-center': {
+                title: 'Centro Comunitário',
+                headers: ['Pacote', 'Item', 'Como Obter'],
+                items: [
+                    // Sala de Artesanato
+                    { id: 'cc_s_parsnip', values: ['Cultivos de Primavera', 'Chirívia', 'Plantar na Primavera'] },
+                    { id: 'cc_s_greenbean', values: ['Cultivos de Primavera', 'Vagem', 'Plantar na Primavera'] },
+                    { id: 'cc_s_cauliflower', values: ['Cultivos de Primavera', 'Couve-flor', 'Plantar na Primavera'] },
+                    { id: 'cc_s_potato', values: ['Cultivos de Primavera', 'Batata', 'Plantar na Primavera'] },
+                    { id: 'cc_su_tomato', values: ['Cultivos de Verão', 'Tomate', 'Plantar no Verão'] },
+                    { id: 'cc_su_hotpepper', values: ['Cultivos de Verão', 'Pimenta quente', 'Plantar no Verão'] },
+                    { id: 'cc_su_blueberry', values: ['Cultivos de Verão', 'Mirtilo', 'Plantar no Verão'] },
+                    { id: 'cc_su_melon', values: ['Cultivos de Verão', 'Melão', 'Plantar no Verão'] },
+                    { id: 'cc_f_corn', values: ['Cultivos de Outono', 'Milho', 'Plantar no Verão/Outono'] },
+                    { id: 'cc_f_eggplant', values: ['Cultivos de Outono', 'Berinjela', 'Plantar no Outono'] },
+                    { id: 'cc_f_pumpkin', values: ['Cultivos de Outono', 'Abóbora', 'Plantar no Outono'] },
+                    { id: 'cc_f_yam', values: ['Cultivos de Outono', 'Inhame', 'Plantar no Outono'] },
+                    { id: 'cc_q_parsnip', values: ['Cultivos de Qualidade', '5 Chirívias (Ouro)', 'Usar fertilizante'] },
+                    { id: 'cc_q_melon', values: ['Cultivos de Qualidade', '5 Melões (Ouro)', 'Usar fertilizante'] },
+                    { id: 'cc_q_pumpkin', values: ['Cultivos de Qualidade', '5 Abóboras (Ouro)', 'Usar fertilizante'] },
+                    { id: 'cc_q_corn', values: ['Cultivos de Qualidade', '5 Milhos (Ouro)', 'Usar fertilizante'] },
+                    { id: 'cc_a_large_milk', values: ['Produtos de Animais', 'Leite grande', 'Vacas felizes'] },
+                    { id: 'cc_a_large_egg_b', values: ['Produtos de Animais', 'Ovo grande (marrom)', 'Galinhas marrons felizes'] },
+                    { id: 'cc_a_large_egg_w', values: ['Produtos de Animais', 'Ovo grande (branco)', 'Galinhas brancas felizes'] },
+                    { id: 'cc_a_large_goat_milk', values: ['Produtos de Animais', 'Leite de cabra grande', 'Cabras felizes'] },
+                    { id: 'cc_a_wool', values: ['Produtos de Animais', 'Lã', 'Ovelhas, Coelhos'] },
+                    { id: 'cc_a_duck_egg', values: ['Produtos de Animais', 'Ovo de pato', 'Patos'] },
+                    { id: 'cc_ar_truffle_oil', values: ['Produtos Artesanais', 'Óleo de trufas', 'Prensa de óleo + Trufa'] },
+                    { id: 'cc_ar_cloth', values: ['Produtos Artesanais', 'Tecido', 'Tear + Lã'] },
+                    { id: 'cc_ar_goat_cheese', values: ['Produtos Artesanais', 'Queijo de cabra', 'Prensa de queijo + Leite de cabra'] },
+                    { id: 'cc_ar_cheese', values: ['Produtos Artesanais', 'Queijo', 'Prensa de queijo + Leite'] },
+                    { id: 'cc_ar_honey', values: ['Produtos Artesanais', 'Mel', 'Colmeia'] },
+                    { id: 'cc_ar_jelly', values: ['Produtos Artesanais', 'Geleia', 'Jarra de conserva + Fruta'] },
+                    { id: 'cc_ar_apple', values: ['Produtos Artesanais', 'Maçã (3)', 'Macieira (Outono)'] },
+                    { id: 'cc_ar_apricot', values: ['Produtos Artesanais', 'Damasco (3)', 'Muda de damasco (Primavera)'] },
+                    { id: 'cc_ar_orange', values: ['Produtos Artesanais', 'Laranja (3)', 'Muda de laranja (Verão)'] },
+                    { id: 'cc_ar_peach', values: ['Produtos Artesanais', 'Pêssego (3)', 'Muda de pêssego (Verão)'] },
+                    { id: 'cc_ar_pomegranate', values: ['Produtos Artesanais', 'Romã (3)', 'Muda de romã (Outono)'] },
+                    { id: 'cc_ar_cherry', values: ['Produtos Artesanais', 'Cereja (3)', 'Muda de cereja (Primavera)'] },
+                    // Despensa
+                    { id: 'cc_p_river_fish_sunfish', values: ['Peixes do Rio', 'Peixe-sol', 'Rio, Sol (Prim/Ver)'] },
+                    { id: 'cc_p_river_fish_catfish', values: ['Peixes do Rio', 'Bagre', 'Rio, Chuva (Prim/Out)'] },
+                    { id: 'cc_p_river_fish_shad', values: ['Peixes do Rio', 'Sável', 'Rio, Chuva (Prim/Ver/Out)'] },
+                    { id: 'cc_p_river_fish_tiger_trout', values: ['Peixes do Rio', 'Truta-tigre', 'Rio (Out/Inv)'] },
+                    { id: 'cc_p_lake_fish_largemouth_bass', values: ['Peixes do Lago', 'Achigã', 'Lago da Montanha'] },
+                    { id: 'cc_p_lake_fish_carp', values: ['Peixes do Lago', 'Carpa', 'Lago, Esgoto, Bosque'] },
+                    { id: 'cc_p_lake_fish_bullhead', values: ['Peixes do Lago', 'Peixe-gato', 'Lago da Montanha'] },
+                    { id: 'cc_p_lake_fish_sturgeon', values: ['Peixes do Lago', 'Esturjão', 'Lago da Montanha (Ver/Inv)'] },
+                    { id: 'cc_p_ocean_fish_sardine', values: ['Peixes do Oceano', 'Sardinha', 'Oceano (Prim/Out/Inv)'] },
+                    { id: 'cc_p_ocean_fish_tuna', values: ['Peixes do Oceano', 'Atum', 'Oceano (Ver/Inv)'] },
+                    { id: 'cc_p_ocean_fish_red_snapper', values: ['Peixes do Oceano', 'Cioba', 'Oceano, Chuva (Ver/Out/Inv)'] },
+                    { id: 'cc_p_ocean_fish_tilapia', values: ['Peixes do Oceano', 'Tilápia', 'Oceano (Ver/Out)'] },
+                    { id: 'cc_p_night_fish_walleye', values: ['Peixes Noturnos', 'Picão-verde', 'Rio/Lago/Floresta, Chuva (Outono)'] },
+                    { id: 'cc_p_night_fish_bream', values: ['Peixes Noturnos', 'Brema', 'Rio (Noite)'] },
+                    { id: 'cc_p_night_fish_eel', values: ['Peixes Noturnos', 'Enguia', 'Oceano, Chuva (Prim/Out)'] },
+                    { id: 'cc_p_crab_pot_lobster', values: ['Covo', 'Lagosta', 'Covo no Oceano'] },
+                    { id: 'cc_p_crab_pot_crayfish', values: ['Covo', 'Lagostim', 'Covo em Água Doce'] },
+                    { id: 'cc_p_crab_pot_crab', values: ['Covo', 'Caranguejo', 'Covo no Oceano / Matar Caranguejo-pedra'] },
+                    { id: 'cc_p_crab_pot_cockle', values: ['Covo', 'Berbigão', 'Coleta na Praia'] },
+                    { id: 'cc_p_crab_pot_mussel', values: ['Covo', 'Mexilhão', 'Coleta na Praia'] },
+                    { id: 'cc_p_crab_pot_shrimp', values: ['Covo', 'Camarão', 'Covo no Oceano'] },
+                    { id: 'cc_p_crab_pot_snail', values: ['Covo', 'Caracol', 'Covo em Água Doce'] },
+                    { id: 'cc_p_crab_pot_periwinkle', values: ['Covo', 'Caramujo', 'Covo em Água Doce'] },
+                    { id: 'cc_p_crab_pot_oyster', values: ['Covo', 'Ostra', 'Coleta na Praia'] },
+                    { id: 'cc_p_crab_pot_clam', values: ['Covo', 'Amêijoa', 'Coleta na Praia'] },
+                    { id: 'cc_p_specialty_fish_pufferfish', values: ['Peixes Especiais', 'Baiacu', 'Oceano, Sol (Verão)'] },
+                    { id: 'cc_p_specialty_fish_ghostfish', values: ['Peixes Especiais', 'Peixe-fantasma', 'Lago das Minas, Gota de Fantasma'] },
+                    { id: 'cc_p_specialty_fish_sandfish', values: ['Peixes Especiais', 'Peixe-do-deserto', 'Deserto'] },
+                    { id: 'cc_p_specialty_fish_woodskip', values: ['Peixes Especiais', 'Saltilonga', 'Bosque Secreto'] },
+                    // Caldeira
+                    { id: 'cc_b_blacksmith_copper', values: ['Pacote do Ferreiro', 'Barra de cobre', 'Fornalha + Minério de cobre'] },
+                    { id: 'cc_b_blacksmith_iron', values: ['Pacote do Ferreiro', 'Barra de ferro', 'Fornalha + Minério de ferro'] },
+                    { id: 'cc_b_blacksmith_gold', values: ['Pacote do Ferreiro', 'Barra de ouro', 'Fornalha + Minério de ouro'] },
+                    { id: 'cc_b_geologist_quartz', values: ['Pacote do Geólogo', 'Quartzo', 'Minas, Caverna'] },
+                    { id: 'cc_b_geologist_earth', values: ['Pacote do Geólogo', 'Cristal de terra', 'Minas (1-39), Geodos'] },
+                    { id: 'cc_b_geologist_frozen', values: ['Pacote do Geólogo', 'Lágrima congelada', 'Minas (40-79)'] },
+                    { id: 'cc_b_geologist_fire', values: ['Pacote do Geólogo', 'Quartzo de fogo', 'Minas (80-120)'] },
+                    { id: 'cc_b_adventurer_slime', values: ['Pacote do Aventureiro', '99 Gosmas', 'Matar Gosmas'] },
+                    { id: 'cc_b_adventurer_batwing', values: ['Pacote do Aventureiro', '10 Asas de morcego', 'Matar Morcegos'] },
+                    { id: 'cc_b_adventurer_solar', values: ['Pacote do Aventureiro', 'Essência solar', 'Matar Fantasmas, Múmias'] },
+                    { id: 'cc_b_adventurer_void', values: ['Pacote do Aventureiro', 'Essência nula', 'Matar Diabretes das sombras'] },
+                    // Quadro de Notícias
+                    { id: 'cc_bb_chef_maple', values: ['Pacote do Chefe', 'Xarope de ácer', 'Torneirinha em Bordo'] },
+                    { id: 'cc_bb_chef_fiddlehead', values: ['Pacote do Chefe', 'Samambaia', 'Bosque Secreto (Verão)'] },
+                    { id: 'cc_bb_chef_truffle', values: ['Pacote do Chefe', 'Trufa', 'Porcos'] },
+                    { id: 'cc_bb_chef_poppy', values: ['Pacote do Chefe', 'Papoula', 'Plantar no Verão'] },
+                    { id: 'cc_bb_chef_maki', values: ['Pacote do Chefe', 'Rolinho de maki', 'Cozinhar (Peixe, Alga, Arroz)'] },
+                    { id: 'cc_bb_chef_friedegg', values: ['Pacote do Chefe', 'Ovo frito', 'Cozinhar (Ovo)'] },
+                    { id: 'cc_bb_dye_redmushroom', values: ['Pacote de Tinturas', 'Cogumelo vermelho', 'Minas, Caverna'] },
+                    { id: 'cc_bb_dye_seaurchin', values: ['Pacote de Tinturas', 'Ouriço-do-mar', 'Poças de maré na Praia'] },
+                    { id: 'cc_bb_dye_sunflower', values: ['Pacote de Tinturas', 'Girassol', 'Plantar no Verão/Outono'] },
+                    { id: 'cc_bb_dye_duckfeather', values: ['Pacote de Tinturas', 'Pena de pato', 'Patos felizes'] },
+                    { id: 'cc_bb_dye_aquamarine', values: ['Pacote de Tinturas', 'Água-marinha', 'Minas'] },
+                    { id: 'cc_bb_dye_redcabbage', values: ['Pacote de Tinturas', 'Repolho roxo', 'Plantar no Verão (Ano 2+)'] },
+                    { id: 'cc_bb_field_chub', values: ['Pesquisa de Campo', 'Cabalhão', 'Rio da Montanha, Floresta'] },
+                    { id: 'cc_bb_field_frozengeode', values: ['Pesquisa de Campo', 'Geodo congelado', 'Minas (40-79)'] },
+                    { id: 'cc_bb_field_nautilus', values: ['Pesquisa de Campo', 'Concha de náutilo', 'Praia (Inverno)'] },
+                    { id: 'cc_bb_fodder_wheat', values: ['Pacote de Ração', '10 Trigos', 'Plantar no Verão/Outono'] },
+                    { id: 'cc_bb_fodder_hay', values: ['Pacote de Ração', '10 Fenos', 'Cortar grama com a Foice'] },
+                    { id: 'cc_bb_fodder_apple', values: ['Pacote de Ração', '3 Maçãs', 'Macieira'] },
+                    { id: 'cc_bb_enchanter_oak', values: ['Pacote do Feiticeiro', 'Resina de carvalho', 'Torneirinha em Carvalho'] },
+                    { id: 'cc_bb_enchanter_wine', values: ['Pacote do Feiticeiro', 'Vinho', 'Barril + Fruta'] },
+                    { id: 'cc_bb_enchanter_rabbitsfoot', values: ['Pacote do Feiticeiro', 'Pé de coelho', 'Coelhos felizes'] },
+                    { id: 'cc_bb_enchanter_pomegranate', values: ['Pacote do Feiticeiro', 'Romã', 'Muda de romã'] },
+                    // Aquário - Cofre
+                    { id: 'cc_v_2500', values: ['Cofre', '2,500g', 'Ganhar dinheiro'] },
+                    { id: 'cc_v_5000', values: ['Cofre', '5,000g', 'Ganhar dinheiro'] },
+                    { id: 'cc_v_10000', values: ['Cofre', '10,000g', 'Ganhar dinheiro'] },
+                    { id: 'cc_v_25000', values: ['Cofre', '25,000g', 'Ganhar dinheiro'] },
+                ]
+            },
+            shipping: {
+                title: 'Coleção de Itens Enviados',
+                headers: ['Item', 'Tipo', 'Fonte'],
+                items: [
+                    {id: "s_amaranth", values: ["Amaranto", "Cultivo", "Outono"]},
+                    {id: "s_grape", values: ["Uva", "Cultivo", "Outono"]},
+                    {id: "s_hops", values: ["Lúpulo", "Cultivo", "Verão"]},
+                    {id: "s_sweet_gem_berry", values: ["Fruta-doce-gemada", "Cultivo", "Semente Rara (Outono)"]},
+                    {id: "s_coffee_bean", values: ["Grão de café", "Cultivo", "Primavera/Verão"]},
+                    {id: "s_truffle", values: ["Trufa", "Animal", "Porco"]},
+                    {id: "s_ancient_fruit", values: ["Fruta antiga", "Cultivo", "Todas as estações (Estufa)"]},
+                    {id: "s_parsnip", values: ["Chirívia", "Cultivo", "Primavera"]},
+                    {id: "s_green_bean", values: ["Vagem", "Cultivo", "Primavera"]},
+                    {id: "s_cauliflower", values: ["Couve-flor", "Cultivo", "Primavera"]},
+                    {id: "s_potato", values: ["Batata", "Cultivo", "Primavera"]},
+                    {id: "s_garlic", values: ["Alho", "Cultivo", "Primavera"]},
+                    {id: "s_kale", values: ["Couve", "Cultivo", "Primavera"]},
+                    {id: "s_rhubarb", values: ["Ruibarbo", "Cultivo", "Primavera (Deserto)"]},
+                    {id: "s_strawberry", values: ["Morango", "Cultivo", "Primavera"]},
+                    {id: "s_unmilled_rice", values: ["Arroz não moído", "Cultivo", "Primavera"]},
+                    {id: "s_melon", values: ["Melão", "Cultivo", "Verão"]},
+                    {id: "s_tomato", values: ["Tomate", "Cultivo", "Verão"]},
+                    {id: "s_blueberry", values: ["Mirtilo", "Cultivo", "Verão"]},
+                    {id: "s_hot_pepper", values: ["Pimenta quente", "Cultivo", "Verão"]},
+                    {id: "s_wheat", values: ["Trigo", "Cultivo", "Verão/Outono"]},
+                    {id: "s_radish", values: ["Rabanete", "Cultivo", "Verão"]},
+                    {id: "s_red_cabbage", values: ["Repolho roxo", "Cultivo", "Verão (Ano 2+)"]},
+                    {id: "s_starfruit", values: ["Carambola", "Cultivo", "Verão (Deserto)"]},
+                    {id: "s_corn", values: ["Milho", "Cultivo", "Verão/Outono"]},
+                    {id: "s_sunflower", values: ["Girassol", "Cultivo", "Verão/Outono"]},
+                    {id: "s_poppy", values: ["Papoula", "Cultivo", "Verão"]},
+                    {id: "s_eggplant", values: ["Berinjela", "Cultivo", "Outono"]},
+                    {id: "s_pumpkin", values: ["Abóbora", "Cultivo", "Outono"]},
+                    {id: "s_yam", values: ["Inhame", "Cultivo", "Outono"]},
+                    {id: "s_bok_choy", values: ["Acelga chinesa", "Cultivo", "Outono"]},
+                    {id: "s_cranberries", values: ["Oxicoco", "Cultivo", "Outono"]},
+                    {id: "s_artichoke", values: ["Alcachofra", "Cultivo", "Outono (Ano 2+)"]},
+                    {id: "s_fairy_rose", values: ["Rosa-de-fada", "Cultivo", "Outono"]},
+                    {id: "s_wild_horseradish", values: ["Raiz-forte selvagem", "Coleta", "Primavera"]},
+                    {id: "s_leek", values: ["Alho-poró", "Coleta", "Primavera"]},
+                    {id: "s_dandelion", values: ["Dente-de-leão", "Coleta", "Primavera"]},
+                    {id: "s_daffodil", values: ["Narciso", "Coleta", "Primavera"]},
+                    {id: "s_morel", values: ["Morchella", "Coleta", "Primavera (Bosque Secreto)"]},
+                    {id: "s_common_mushroom", values: ["Cogumelo comum", "Coleta", "Outono, Caverna"]},
+                    {id: "s_salmonberry", values: ["Amora-silvestre", "Coleta", "Primavera"]},
+                    {id: "s_spice_berry", values: ["Baga de especiaria", "Coleta", "Verão"]},
+                    {id: "s_blackberry", values: ["Amora", "Coleta", "Outono"]},
+                    {id: "s_winter_root", values: ["Raiz de inverno", "Coleta", "Inverno (cavando)"]},
+                    {id: "s_crystal_fruit", values: ["Fruta de cristal", "Coleta", "Inverno"]},
+                    {id: "s_snow_yam", values: ["Inhame de neve", "Coleta", "Inverno (cavando)"]},
+                    {id: "s_crocus", values: ["Açafrão-da-neve", "Coleta", "Inverno"]},
+                    {id: "s_holly", values: ["Azevinho", "Coleta", "Inverno"]},
+                    {id: "s_cave_carrot", values: ["Cenoura da caverna", "Coleta", "Minas (caixas)"]},
+                    {id: "s_red_mushroom", values: ["Cogumelo vermelho", "Coleta", "Minas, Caverna"]},
+                    {id: "s_purple_mushroom", values: ["Cogumelo roxo", "Coleta", "Minas, Caverna"]},
+                    {id: "s_chanterelle", values: ["Cantarelo", "Coleta", "Outono (Bosque Secreto)"]},
+                    {id: "s_fiddlehead_fern", values: ["Samambaia", "Coleta", "Verão (Bosque Secreto)"]},
+                    {id: "s_hazelnut", values: ["Avelã", "Coleta", "Outono"]},
+                    {id: "s_wild_plum", values: ["Ameixa selvagem", "Coleta", "Outono"]},
+                    {id: "s_ginger", values: ["Gengibre", "Coleta", "Ilha Gengibre"]},
+                    {id: "s_coconut", values: ["Coco", "Coleta", "Deserto, Ilha"]},
+                    {id: "s_cactus_fruit", values: ["Fruta de cacto", "Coleta", "Deserto"]},
+                ]
+            },
+            fish: {
+                title: 'Coleção de Peixes',
+                headers: ['Peixe', 'Localização', 'Condição'],
+                items: [
+                    { id: 'f_pufferfish', values: ['Baiacu', 'Oceano', 'Verão, Sol, 12pm-4pm'] },
+                    { id: 'f_anchovy', values: ['Anchova', 'Oceano', 'Primavera/Outono'] },
+                    { id: 'f_tuna', values: ['Atum', 'Oceano', 'Verão/Inverno, 6am-7pm'] },
+                    { id: 'f_sardine', values: ['Sardinha', 'Oceano', 'Primavera/Outono/Inverno, 6am-7pm'] },
+                    { id: 'f_bream', values: ['Brema', 'Rio', 'Qualquer estação, 6pm-2am'] },
+                    { id: 'f_largemouth_bass', values: ['Achigã', 'Lago da Montanha', 'Todas, 6am-7pm'] },
+                    { id: 'f_smallmouth_bass', values: ['Achigã-pequeno', 'Rio (Vila/Floresta)', 'Primavera/Outono'] },
+                    { id: 'f_rainbow_trout', values: ['Truta arco-íris', 'Rio, Lago', 'Verão, Sol, 6am-7pm'] },
+                    { id: 'f_salmon', values: ['Salmão', 'Rio', 'Outono, 6am-7pm'] },
+                    { id: 'f_walleye', values: ['Picão-verde', 'Rio, Lago', 'Outono, Chuva, 12pm-2am'] },
+                    { id: 'f_perch', values: ['Perca', 'Rio, Lago', 'Inverno'] },
+                    { id: 'f_carp', values: ['Carpa', 'Lago, Esgoto, Bosque Secreto', 'Qualquer'] },
+                    { id: 'f_catfish', values: ['Bagre', 'Rio', 'Primavera/Outono, Chuva'] },
+                    { id: 'f_pike', values: ['Lúcio', 'Rio, Lago', 'Verão/Inverno'] },
+                    { id: 'f_sunfish', values: ['Peixe-sol', 'Rio', 'Primavera/Verão, Sol, 6am-7pm'] },
+                    { id: 'f_red_mullet', values: ['Salmonete', 'Oceano', 'Verão/Inverno, 6am-7pm'] },
+                    { id: 'f_herring', values: ['Arenque', 'Oceano', 'Primavera/Inverno'] },
+                    { id: 'f_eel', values: ['Enguia', 'Oceano', 'Primavera/Outono, Chuva, 4pm-2am'] },
+                    { id: 'f_octopus', values: ['Polvo', 'Oceano', 'Verão, 6am-1pm'] },
+                    { id: 'f_red_snapper', values: ['Cioba', 'Oceano', 'Verão/Outono, Chuva, 6am-7pm'] },
+                    { id: 'f_squid', values: ['Lula', 'Oceano', 'Inverno, 6pm-2am'] },
+                    { id: 'f_sea_cucumber', values: ['Pepino-do-mar', 'Oceano', 'Outono/Inverno, 6am-7pm'] },
+                    { id: 'f_super_cucumber', values: ['Superpepino', 'Oceano', 'Verão/Outono, 6pm-2am'] },
+                    { id: 'f_ghostfish', values: ['Peixe-fantasma', 'Lago da Mina', 'Qualquer'] },
+                    { id: 'f_stonefish', values: ['Peixe-pedra', 'Mina (andar 20)', 'Qualquer'] },
+                    { id: 'f_ice_pip', values: ['Pipa-de-gelo', 'Mina (andar 60)', 'Qualquer'] },
+                    { id: 'f_lava_eel', values: ['Enguia de lava', 'Mina (andar 100)', 'Qualquer'] },
+                    { id: 'f_sandfish', values: ['Peixe-do-deserto', 'Deserto', '6am-8pm'] },
+                    { id: 'f_scorpion_carp', values: ['Carpa escorpião', 'Deserto (caverna)', '6am-8pm'] },
+                    { id: 'f_sturgeon', values: ['Esturjão', 'Lago da Montanha', 'Verão/Inverno'] },
+                    { id: 'f_tiger_trout', values: ['Truta-tigre', 'Rio', 'Outono/Inverno'] },
+                    { id: 'f_bullhead', values: ['Peixe-gato', 'Lago da Montanha', 'Qualquer'] },
+                    { id: 'f_tilapia', values: ['Tilápia', 'Oceano', 'Verão/Outono'] },
+                    { id: 'f_chub', values: ['Cabalhão', 'Rio da Floresta/Montanha', 'Qualquer'] },
+                    { id: 'f_dorado', values: ['Dourado', 'Rio da Floresta', 'Verão, 6am-7pm'] },
+                    { id: 'f_albacore', values: ['Albacora', 'Oceano', 'Outono/Inverno, 6am-11am, 6pm-2am'] },
+                    { id: 'f_shad', values: ['Sável', 'Rio', 'Primavera/Verão/Outono, Chuva'] },
+                    { id: 'f_halibut', values: ['Halibute', 'Oceano', 'Primavera/Verão/Inverno'] },
+                    { id: 'f_woodskip', values: ['Saltilonga', 'Bosque Secreto', 'Qualquer'] },
+                    { id: 'f_void_salmon', values: ['Salmão nulo', 'Pântano da Bruxa', 'Qualquer'] },
+                    { id: 'f_blue_discus', values: ['Acará-disco azul', 'Lago da Ilha Gengibre', 'Qualquer'] },
+                    { id: 'f_lionfish', values: ['Peixe-leão', 'Oceano da Ilha Gengibre', 'Qualquer'] },
+                    { id: 'f_stingray', values: ['Raia', 'Caverna do Pirata (Ilha)', 'Qualquer'] },
+                    // Lendários
+                    { id: 'f_crimsonfish', values: ['Peixe-carmesim', 'Praia (leste)', 'Verão'] },
+                    { id: 'f_angler', values: ['Tamboril', 'Rio (norte da Joja)', 'Outono'] },
+                    { id: 'f_legend', values: ['Lenda', 'Lago da Montanha', 'Primavera, Chuva'] },
+                    { id: 'f_glacierfish', values: ['Peixe-gelo', 'Ilha na Floresta Cinzaseiva', 'Inverno'] },
+                    { id: 'f_mutant_carp', values: ['Carpa mutante', 'Esgoto', 'Qualquer'] },
+                ]
+            },
+            'artifacts-minerals': {
+                title: 'Artefatos e Minerais',
+                headers: ['Item', 'Tipo', 'Fonte Principal'],
+                items: [
+                    { id: 'am_dwarf_scroll_i', values: ['Pergaminho dos anões I', 'Artefato', 'Minas (andares 1-40)'] },
+                    { id: 'am_dwarf_scroll_ii', values: ['Pergaminho dos anões II', 'Artefato', 'Minas (andares 1-40, Espíritos do Pó)'] },
+                    { id: 'am_dwarf_scroll_iii', values: ['Pergaminho dos anões III', 'Artefato', 'Minas (andar 80+, Golems de Lava)'] },
+                    { id: 'am_dwarf_scroll_iv', values: ['Pergaminho dos anões IV', 'Artefato', 'Qualquer monstro (exceto Selvagens)'] },
+                    { id: 'am_chipped_amphora', values: ['Ânfora lascada', 'Artefato', 'Vila Pelicanos (local de artefato)'] },
+                    { id: 'am_arrowhead', values: ['Ponta de flecha', 'Artefato', 'Montanha, Floresta (local de artefato)'] },
+                    { id: 'am_ancient_doll', values: ['Boneca antiga', 'Artefato', 'Montanha, Floresta, Vila, Ônibus'] },
+                    { id: 'am_elvish_jewelry', values: ['Joia élfica', 'Artefato', 'Floresta (local de artefato)'] },
+                    { id: 'am_chewing_stick', values: ['Graveto de mascar', 'Artefato', 'Montanha, Vila (local de artefato)'] },
+                    { id: 'am_ornamental_fan', values: ['Leque ornamental', 'Artefato', 'Praia, Vila, Floresta'] },
+                    { id: 'am_dinosaur_egg', values: ['Ovo de dinossauro', 'Artefato', 'Montanha (local de artefato), Pesca'] },
+                    { id: 'am_rare_disc', values: ['Disco raro', 'Artefato', 'Gota de monstro, Pesca'] },
+                    { id: 'am_ancient_sword', values: ['Espada antiga', 'Artefato', 'Floresta, Pesca'] },
+                    { id: 'am_rusty_spoon', values: ['Colher enferrujada', 'Artefato', 'Vila, Pesca'] },
+                    { id: 'am_rusty_spur', values: ['Espora enferrujada', 'Artefato', 'Fazenda, Pesca'] },
+                    { id: 'am_rusty_cog', values: ['Engrenagem enferrujada', 'Artefato', 'Montanha, Pesca'] },
+                    { id: 'am_chicken_statue', values: ['Estátua de galinha', 'Artefato', 'Fazenda, Pesca'] },
+                    { id: 'am_prehistoric_tool', values: ['Ferramenta pré-histórica', 'Artefato', 'Montanha, Floresta, Ônibus'] },
+                    { id: 'am_dried_starfish', values: ['Estrela-do-mar seca', 'Artefato', 'Praia'] },
+                    { id: 'am_anchor', values: ['Âncora', 'Artefato', 'Praia, Pesca'] },
+                    { id: 'am_glass_shards', values: ['Cacos de vidro', 'Artefato', 'Praia, Pesca'] },
+                    { id: 'am_bone_flute', values: ['Flauta de osso', 'Artefato', 'Montanha, Floresta, Vila'] },
+                    { id: 'am_prehistoric_handaxe', values: ['Machadinha pré-histórica', 'Artefato', 'Montanha, Floresta, Ônibus'] },
+                    { id: 'am_dwarvish_helm', values: ['Elmo de anão', 'Artefato', 'Minas (1-40)'] },
+                    { id: 'am_dwarf_gadget', values: ['Aparelho de anão', 'Artefato', 'Minas (40-80)'] },
+                    { id: 'am_ancient_drum', values: ['Tambor antigo', 'Artefato', 'Geodos congelados/Omni'] },
+                    { id: 'am_golden_mask', values: ['Máscara dourada', 'Artefato', 'Deserto'] },
+                    { id: 'am_golden_relic', values: ['Relíquia dourada', 'Artefato', 'Deserto'] },
+                    { id: 'am_strange_doll_g', values: ['Boneca estranha (verde)', 'Artefato', 'Cavando em qualquer lugar'] },
+                    { id: 'am_strange_doll_y', values: ['Boneca estranha (amarela)', 'Artefato', 'Cavando em qualquer lugar'] },
+                    { id: 'am_prehistoric_scapula', values: ['Escápula pré-histórica', 'Artefato', 'Vila, Floresta'] },
+                    { id: 'am_prehistoric_tibia', values: ['Tíbia pré-histórica', 'Artefato', 'Floresta, Ferrovia'] },
+                    { id: 'am_prehistoric_skull', values: ['Crânio pré-histórico', 'Artefato', 'Montanha'] },
+                    { id: 'am_skeletal_hand', values: ['Mão de esqueleto', 'Artefato', 'Praia'] },
+                    { id: 'am_prehistoric_rib', values: ['Costela pré-histórica', 'Artefato', 'Vila'] },
+                    { id: 'am_prehistoric_vertebra', values: ['Vértebra pré-histórica', 'Artefato', 'Ponto de Ônibus'] },
+                    { id: 'am_trilobite', values: ['Trilobita', 'Artefato', 'Praia, Montanha'] },
+                    // Minerais
+                    { id: 'am_quartz', values: ['Quartzo', 'Mineral', 'Minas, Geodos'] },
+                    { id: 'am_earth_crystal', values: ['Cristal de terra', 'Mineral', 'Minas (1-39), Geodos'] },
+                    { id: 'am_frozen_tear', values: ['Lágrima congelada', 'Mineral', 'Minas (40-79)'] },
+                    { id: 'am_fire_quartz', values: ['Quartzo de fogo', 'Mineral', 'Minas (80-120)'] },
+                    { id: 'am_diamond', values: ['Diamante', 'Gema', 'Minas (50+)'] },
+                    { id: 'am_emerald', values: ['Esmeralda', 'Gema', 'Nós de esmeralda'] },
+                    { id: 'am_aquamarine', values: ['Água-marinha', 'Gema', 'Nós de água-marinha'] },
+                    { id: 'am_ruby', values: ['Rubi', 'Gema', 'Nós de rubi'] },
+                    { id: 'am_amethyst', values: ['Ametista', 'Gema', 'Nós de ametista'] },
+                    { id: 'am_topaz', values: ['Topázio', 'Gema', 'Nós de topázio'] },
+                    { id: 'am_jade', values: ['Jade', 'Gema', 'Nós de jade'] },
+                    { id: 'am_prismatic_shard', values: ['Fragmento prismático', 'Gema', 'Pedra mística, Omnigeodo'] },
+                    // ... e muitos outros minerais de geodos
+                ]
+            },
+            cooking: {
+                title: 'Culinária',
+                headers: ['Receita', 'Ingredientes', 'Fonte da Receita'],
+                items: [
+                    { id: 'c_fried_egg', values: ['Ovo Frito', '1 Ovo', 'Cozinha da Casa'] },
+                    { id: 'c_omelet', values: ['Omelete', '1 Ovo, 1 Leite', 'Rainha do Molho / Willy 3♥'] },
+                    { id: 'c_salad', values: ['Salada', '1 Alho-poró, 1 Dente-de-leão, 1 Vinagre', 'Emily 3♥'] },
+                    { id: 'c_cheese_cauliflower', values: ['Couve-flor gratinada', '1 Couve-flor, 1 Queijo', 'Pam 3♥'] },
+                    { id: 'c_baked_fish', values: ['Peixe Assado', '1 Peixe-sol, 1 Brema, 1 Farinha de trigo', 'Rainha do Molho'] },
+                    { id: 'c_parsnip_soup', values: ['Sopa de chirívia', '1 Chirívia, 1 Leite, 1 Vinagre', 'Caroline 3♥'] },
+                    { id: 'c_vegetable_medley', values: ['Misto de legumes', '1 Tomate, 1 Beterraba', 'Caroline 7♥'] },
+                    { id: 'c_complete_breakfast', values: ['Café da manhã completo', '1 Ovo frito, 1 Leite, 1 Batata frita, 1 Panqueca', 'Rainha do Molho'] },
+                    { id: 'c_fried_calamari', values: ['Lula frita', '1 Lula, 1 Farinha de trigo, 1 Óleo', 'Jodi 3♥'] },
+                    { id: 'c_strange_bun', values: ['Pão estranho', '1 Farinha de trigo, 1 Caramujo, 1 Maionese nula', 'Shane 7♥'] },
+                    { id: 'c_lucky_lunch', values: ['Almoço da sorte', '1 Ouriço-do-mar, 1 Tortilla, 1 Alga azul', 'Rainha do Molho'] },
+                    { id: 'c_fried_mushroom', values: ['Cogumelo frito', '1 Cogumelo comum, 1 Morchella, 1 Óleo', 'Demetrius 3♥'] },
+                    { id: 'c_pizza', values: ['Pizza', '1 Farinha de trigo, 1 Tomate, 1 Queijo', 'Rainha do Molho'] },
+                    { id: 'c_bean_hotpot', values: ['Guisado de feijão', '2 Vagens', 'Clint 7♥'] },
+                    { id: 'c_glazed_yams', values: ['Inhames glaceados', '1 Inhame, 1 Açúcar', 'Rainha do Molho'] },
+                    { id: 'c_carp_surprise', values: ['Surpresa de carpa', '4 Carpas', 'Rainha do Molho'] },
+                    { id: 'c_hashbrowns', values: ['Batata frita', '1 Batata, 1 Óleo', 'Rainha do Molho / Saloon'] },
+                    { id: 'c_pancakes', values: ['Panquecas', '1 Farinha de trigo, 1 Ovo', 'Rainha do Molho / Jodi 3♥'] },
+                    { id: 'c_salmon_dinner', values: ['Jantar de salmão', '1 Salmão, 1 Couve-galega, 1 Amaranto', 'Gus 3♥'] },
+                    { id: 'c_fish_taco', values: ['Taco de peixe', '1 Atum, 1 Tortilla, 1 Repolho roxo, 1 Maionese', 'Linus 7♥'] },
+                    { id: 'c_crispy_bass', values: ['Achigã crocante', '1 Achigã, 1 Farinha de trigo, 1 Óleo', 'Kent 3♥'] },
+                    { id: 'c_pepper_poppers', values: ['Pimentas recheadas', '1 Pimenta quente, 1 Queijo', 'Shane 3♥'] },
+                    { id: 'c_bread', values: ['Pão', '1 Farinha de trigo', 'Rainha do Molho / Saloon'] },
+                    { id: 'c_tom_kha_soup', values: ['Sopa Tom Kha', '1 Coco, 1 Camarão, 1 Cogumelo comum', 'Sandy 7♥'] },
+                    { id: 'c_trout_soup', values: ['Sopa de truta', '1 Truta arco-íris, 1 Alga verde', 'Rainha do Molho'] },
+                    { id: 'c_chocolate_cake', values: ['Bolo de chocolate', '1 Farinha de trigo, 1 Açúcar, 1 Ovo', 'Rainha do Molho'] },
+                    { id: 'c_pink_cake', values: ['Bolo rosa', '1 Melão, 1 Farinha de trigo, 1 Açúcar, 1 Ovo', 'Rainha do Molho'] },
+                    { id: 'c_rhubarb_pie', values: ['Torta de ruibarbo', '1 Ruibarbo, 1 Farinha de trigo, 1 Açúcar', 'Marnie 7♥'] },
+                    { id: 'c_pumpkin_soup', values: ['Sopa de abóbora', '1 Abóbora, 1 Leite', 'Robin 7♥'] },
+                    { id: 'c_radish_salad', values: ['Salada de rabanete', '1 Rabanete, 1 Óleo, 1 Vinagre', 'Rainha do Molho'] },
+                    { id: 'c_fruit_salad', values: ['Salada de frutas', '1 Mirtilo, 1 Melão, 1 Damasco', 'Rainha do Molho'] },
+                    { id: 'c_blackberry_cobbler', values: ['Torta de amora', '2 Amoras, 1 Açúcar, 1 Farinha de trigo', 'Rainha do Molho'] },
+                    { id: 'c_cranberry_sauce', values: ['Molho de oxicoco', '1 Oxicoco, 1 Açúcar', 'Gus 5♥'] },
+                    { id: 'c_stuffing', values: ['Recheio', '1 Pão, 1 Oxicoco, 1 Avelã', 'Pam 7♥'] },
+                    { id: 'c_farmers_lunch', values: ['Almoço de fazendeiro', '1 Omelete, 1 Chirívia', 'Nível 3 Cultivo'] },
+                    { id: 'c_survival_burger', values: ['Hambúrguer de sobrevivência', '1 Pão, 1 Cenoura da caverna, 1 Berinjela', 'Nível 2 Coleta'] },
+                    { id: 'c_dish_o_the_sea', values: ['Prato do mar', '2 Sardinhas, 1 Batata frita', 'Nível 3 Pesca'] },
+                    { id: 'c_miners_treat', values: ['Doce de mineiro', '2 Cenouras da caverna, 1 Açúcar, 1 Leite', 'Nível 3 Mineração'] },
+                    { id: 'c_roots_platter', values: ['Prato de raízes', '1 Cenoura da caverna, 1 Raiz de inverno', 'Nível 3 Combate'] },
+                ]
+            },
+            crafting: {
+                title: 'Criação de Itens',
+                headers: ['Item', 'Ingredientes', 'Fonte da Receita'],
+                items: [
+                    { id: 'cr_wood_chest', values: ['Baú', '50 Madeira', 'Nível 1 de Coleta'] },
+                    { id: 'cr_scarecrow', values: ['Espantalho', '50 Madeira, 1 Carvão, 20 Fibra', 'Nível 1 de Cultivo'] },
+                    { id: 'cr_furnace', values: ['Fornalha', '20 Minério de cobre, 25 Pedra', 'Cutscene com Clint'] },
+                    { id: 'cr_sprinkler', values: ['Aspersor', '1 Barra de cobre, 1 Barra de ferro', 'Nível 2 de Cultivo'] },
+                    { id: 'cr_quality_sprinkler', values: ['Aspersor de qualidade', '1 Barra de ferro, 1 Barra de ouro, 1 Quartzo refinado', 'Nível 6 de Cultivo'] },
+                    { id: 'cr_iridium_sprinkler', values: ['Aspersor de irídio', '1 Barra de ouro, 1 Barra de irídio, 1 Bateria', 'Nível 9 de Cultivo'] },
+                    { id: 'cr_bee_house', values: ['Colmeia', '40 Madeira, 8 Carvão, 1 Barra de ferro, 1 Xarope de ácer', 'Nível 3 de Cultivo'] },
+                    { id: 'cr_preserves_jar', values: ['Jarra de conserva', '50 Madeira, 40 Pedra, 8 Carvão', 'Nível 4 de Cultivo'] },
+                    { id: 'cr_keg', values: ['Barril', '30 Madeira, 1 Barra de cobre, 1 Barra de ferro, 1 Resina de carvalho', 'Nível 8 de Cultivo'] },
+                    { id: 'cr_cheese_press', values: ['Prensa de queijo', '45 Madeira, 45 Pedra, 10 Madeira de lei, 1 Barra de cobre', 'Nível 6 de Cultivo'] },
+                    { id: 'cr_loom', values: ['Tear', '60 Madeira, 30 Fibra, 1 Piche de pinheiro', 'Nível 7 de Cultivo'] },
+                    { id: 'cr_mayonnaise_machine', values: ['Máquina de maionese', '15 Madeira, 15 Pedra, 1 Cristal de terra, 1 Barra de cobre', 'Nível 2 de Cultivo'] },
+                    { id: 'cr_oil_maker', values: ['Prensa de óleo', '50 Gosma, 20 Madeira de lei, 1 Barra de ouro', 'Nível 8 de Cultivo'] },
+                    { id: 'cr_recycling_machine', values: ['Máquina de reciclagem', '25 Madeira, 25 Pedra, 1 Barra de ferro', 'Nível 4 de Pesca'] },
+                    { id: 'cr_worm_bin', values: ['Caixa de minhocas', '25 Madeira de lei, 1 Barra de ouro, 1 Barra de ferro, 50 Fibra', 'Nível 8 de Pesca'] },
+                    { id: 'cr_crystalarium', values: ['Cristalário', '99 Pedra, 5 Barra de ouro, 2 Barra de irídio, 1 Bateria', 'Nível 9 de Mineração'] },
+                    { id: 'cr_tapper', values: ['Torneirinha', '40 Madeira, 2 Barra de cobre', 'Nível 3 de Coleta'] },
+                    { id: 'cr_charcoal_kiln', values: ['Fornalha de carvão', '20 Madeira, 2 Barra de cobre', 'Nível 4 de Coleta'] },
+                    { id: 'cr_lightning_rod', values: ['Para-raios', '1 Barra de ferro, 1 Quartzo refinado, 5 Pedaço de gosma', 'Nível 6 de Coleta'] },
+                    { id: 'cr_seed_maker', values: ['Gerador de sementes', '25 Madeira, 1 Barra de ouro, 10 Carvão', 'Nível 9 de Cultivo'] },
+                    { id: 'cr_staircase', values: ['Escada', '99 Pedra', 'Nível 2 de Mineração'] },
+                    { id: 'cr_transmute_fe', values: ['Transmutar (Fe)', '3 Barras de cobre', 'Nível 4 de Mineração'] },
+                    { id: 'cr_transmute_au', values: ['Transmutar (Au)', '2 Barras de ferro', 'Nível 7 de Mineração'] },
+                    { id: 'cr_iridium_band', values: ['Anel de irídio', '5 Barra de irídio, 50 Essência nula, 50 Essência solar', 'Nível 9 de Combate'] },
+                    { id: 'cr_field_snack', values: ['Lanche de campo', '1 Semente de ácer, 1 Semente de pinheiro, 1 Semente de carvalho', 'Nível 1 de Coleta'] },
+                    { id: 'cr_jack_o_lantern', values: ['Lanterna de abóbora', '1 Abóbora, 1 Tocha', 'Noite das Bruxas'] },
+                    { id: 'cr_wedding_ring', values: ['Anel de casamento', '5 Barra de irídio, 1 Fragmento prismático', 'Carrinho de Viagem (Multijogador)'] },
+                ]
+            }
+        };
+
+        // --- LÓGICA DA APLICAÇÃO ---
+
+        let db;
+        let auth;
+        let userId;
+        let progressData = {};
+        let unsubOnSnapshot = () => {};
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-stardew-tracker';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const authStatusEl = document.getElementById('auth-status');
+        const tabContainer = document.querySelector('nav');
+        const contentContainer = document.getElementById('tab-content');
+        
+        async function initializeFirebase() {
+            if (!firebaseConfig) {
+                authStatusEl.textContent = "Erro: Configuração do Firebase não encontrada.";
+                loadingOverlay.style.display = 'none';
+                return;
+            }
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setupAuthListener();
+            } catch (error) {
+                console.error("Erro ao inicializar Firebase:", error);
+                authStatusEl.textContent = "Falha ao conectar com o banco de dados.";
+                loadingOverlay.style.display = 'none';
+            }
+        }
+        
+        function setupAuthListener() {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    authStatusEl.textContent = `Conectado como: ${userId.substring(0, 8)}...`;
+                    await setupRealtimeListener();
+                } else {
+                    authStatusEl.textContent = 'Autenticando...';
+                    await authenticateUser();
+                }
+            });
+        }
+        
+        async function authenticateUser() {
+             try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication failed: ", error);
+                authStatusEl.textContent = "Falha na autenticação.";
+                loadingOverlay.style.display = 'none';
+            }
+        }
+        
+        async function setupRealtimeListener() {
+            unsubOnSnapshot(); // Unsubscribe from previous listener if it exists
+            const docRef = doc(db, `artifacts/${appId}/users/${userId}/stardew-progress/data`);
+            
+            unsubOnSnapshot = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    progressData = docSnap.data();
+                } else {
+                    // Se não existe, inicializamos um objeto vazio. Será criado no primeiro save.
+                    progressData = {};
+                }
+                
+                // Renderiza a aba ativa ou o painel inicial
+                const activeTab = document.querySelector('.tab-button.active').dataset.tab;
+                renderContent(activeTab);
+                loadingOverlay.style.display = 'none';
+            }, (error) => {
+                console.error("Erro ao ouvir dados:", error);
+                authStatusEl.textContent = "Erro ao carregar dados.";
+                loadingOverlay.style.display = 'none';
+            });
+        }
+
+        function renderDashboard() {
+            const data = gameData.dashboard;
+            let content = `<div class="p-4"><h2 class="text-2xl md:text-3xl font-bold mb-6 text-center">${data.title}</h2><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
+            
+            data.categories.forEach(cat => {
+                const categoryData = gameData[cat.id];
+                const totalItems = categoryData ? categoryData.items.length : 0;
+                const categoryProgress = progressData[cat.id] || {};
+                const completedCount = Object.values(categoryProgress).filter(v => v).length;
+                const percentage = totalItems > 0 ? (completedCount / totalItems) * 100 : 0;
+                
+                content += `
+                    <div class="card-bg p-4 rounded-md border-2 border-[#ab7438]">
+                        <h3 class="font-bold text-lg">${cat.name}</h3>
+                        <p class="text-sm mb-2">${completedCount} / ${totalItems}</p>
+                        <div class="w-full bg-[#e0c99a] rounded-full h-4">
+                            <div class="bg-green-600 h-4 rounded-full" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            content += `</div></div>`;
+            return content;
+        }
+
+        function renderTable(tabId) {
+            const data = gameData[tabId];
+            if (!data) return '<p>Conteúdo não encontrado.</p>';
+
+            let table = `<div class="overflow-x-auto"><h2 class="text-2xl md:text-3xl font-bold mb-6 text-center">${data.title}</h2>
+                         <table class="w-full text-left border-collapse">
+                            <thead><tr class="border-b-4 border-[#ab7438]">`;
+            
+            table += `<th class="p-2 w-12">Feito</th>`;
+            data.headers.forEach(header => {
+                table += `<th class="p-2">${header}</th>`;
+            });
+
+            table += `</tr></thead><tbody>`;
+
+            const categoryProgress = progressData[tabId] || {};
+
+            data.items.forEach(item => {
+                const isCompleted = !!categoryProgress[item.id];
+                table += `<tr class="border-b-2 border-[#e0c99a] hover:bg-[#f3dca4] ${isCompleted ? 'completed' : ''}" data-item-id="${item.id}" data-category="${tabId}">`;
+                table += `<td class="p-2"><input type="checkbox" ${isCompleted ? 'checked' : ''}></td>`;
+                item.values.forEach(value => {
+                    table += `<td class="p-2">${value}</td>`;
+                });
+                table += `</tr>`;
+            });
+
+            table += `</tbody></table></div>`;
+            return table;
+        }
+
+        function renderContent(tabId) {
+            if (tabId === 'dashboard') {
+                contentContainer.innerHTML = renderDashboard();
+            } else {
+                contentContainer.innerHTML = renderTable(tabId);
+            }
+        }
+        
+        async function handleCheckboxChange(e) {
+            const checkbox = e.target;
+            const row = checkbox.closest('tr');
+            const itemId = row.dataset.itemId;
+            const category = row.dataset.category;
+
+            if (!progressData[category]) {
+                progressData[category] = {};
+            }
+            progressData[category][itemId] = checkbox.checked;
+
+            // Atualiza o visual da linha imediatamente
+            row.classList.toggle('completed', checkbox.checked);
+
+            try {
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/stardew-progress/data`);
+                await setDoc(docRef, progressData, { merge: true });
+            } catch (error) {
+                console.error("Erro ao salvar progresso: ", error);
+                // Reverte a mudança visual em caso de erro
+                checkbox.checked = !checkbox.checked;
+                row.classList.toggle('completed', checkbox.checked);
+                alert("Não foi possível salvar seu progresso. Verifique sua conexão.");
+            }
+        }
+
+        // --- INICIALIZAÇÃO E EVENTOS ---
+
+        tabContainer.addEventListener('click', (e) => {
+            if (e.target.matches('.tab-button')) {
+                document.querySelector('.tab-button.active').classList.remove('active');
+                e.target.classList.add('active');
+                renderContent(e.target.dataset.tab);
+            }
+        });
+        
+        contentContainer.addEventListener('change', (e) => {
+            if (e.target.type === 'checkbox') {
+                handleCheckboxChange(e);
+            }
+        });
+
+        // Inicia a aplicação
+        document.addEventListener('DOMContentLoaded', initializeFirebase);
+    </script>
+</body>
+</html>
+
