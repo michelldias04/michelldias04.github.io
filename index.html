@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ana Beatriz ∞ Michell</title>
+    <!-- Tailwind CSS para estilização rápida e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fontes do Google: Playfair Display (elegante/serifada) e Lato (moderna/limpa) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        h1, h2, h3, .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Mantém as proporções e orientação originais das fotos */
+        .gallery-photo {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        /* --- Animação da Galeria (Deslizamento Infinito Mosaico) --- */
+        .marquee-wrapper {
+            display: flex;
+            overflow: hidden;
+            width: 100%;
+            padding: 1rem 0;
+        }
+
+        .marquee-content {
+            display: flex;
+            /* Tempo da animação ajustado para 50 fotos (mais lento: 150s) */
+            animation: marquee 150s linear infinite;
+            gap: 1.5rem; /* gap-6 do tailwind */
+            padding-right: 1.5rem;
+        }
+
+        /* Pausa a rolagem quando passa o mouse ou toca na tela */
+        .marquee-wrapper:hover .marquee-content {
+            animation-play-state: paused;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-gray-800">
+
+    <!-- SESSÃO 1: Cabeçalho de Boas-Vindas -->
+    <header class="min-h-screen flex flex-col justify-center items-center text-center px-4 relative bg-white">
+        <!-- Fundo suavemente colorido -->
+        <div class="absolute inset-0 bg-rose-50 opacity-40"></div>
+        
+        <div class="z-10 flex flex-col items-center">
+            <span class="text-xs md:text-sm tracking-[0.3em] uppercase mb-6 text-rose-400 font-bold">Um tributo ao nosso amor</span>
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-semibold mb-6 text-stone-800 font-serif leading-tight">
+                Ana Beatriz <br>
+                <span class="text-rose-500 font-sans text-4xl md:text-6xl mx-4 animate-pulse">∞</span> <br>
+                Michell
+            </h1>
+            <p class="text-lg md:text-xl text-stone-500 italic font-serif mt-4 max-w-md">
+                "Espero nunca deixar de te amar para não esquecer o seu nome."
+            </p>
+        </div>
+
+        <!-- Seta indicando para descer -->
+        <div class="absolute bottom-12 animate-bounce">
+            <a href="#galeria" class="text-rose-300 hover:text-rose-500 transition-colors">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+            </a>
+        </div>
+    </header>
+
+    <!-- SESSÃO 2: Nossa Galeria (Estilo Museu Mosaico + Rolagem) -->
+    <section id="galeria" class="py-24 bg-white border-t border-stone-100 overflow-hidden">
+        <div class="container mx-auto px-4 text-center mb-16 relative z-10">
+            <h2 class="text-4xl md:text-5xl font-serif text-stone-800 mb-4">Nossa Galeria</h2>
+            <p class="text-stone-500 max-w-2xl mx-auto text-lg">
+                Nossos melhores momentos, expostos na galeria do nosso próprio museu.
+                <br><span class="text-sm opacity-75">(Passe o mouse ou segure na foto para pausar a rolagem)</span>
+            </p>
+        </div>
+        
+        <!-- A Galeria será gerada automaticamente pelo JavaScript no final da página -->
+        <div class="marquee-wrapper" id="galeria-container">
+            <!-- O conteúdo entrará aqui magicamente -->
+        </div>
+    </section>
+
+    <!-- SESSÃO 3: Nossas Músicas -->
+    <section id="musicas" class="py-24 bg-zinc-900 text-stone-100 relative">
+        <!-- Detalhe decorativo no fundo -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+            <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-rose-500 blur-3xl"></div>
+            <div class="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-indigo-500 blur-3xl"></div>
+        </div>
+
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-serif text-white mb-4">Nossas Músicas</h2>
+                <p class="text-zinc-400 max-w-2xl mx-auto text-lg">A trilha sonora da nossa história. Cada melodia carrega um pedacinho de nós.</p>
+            </div>
+
+            <!-- Grade Artística do Spotify -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Para pegar o código do seu Spotify: 
+                     1. Abra a música no Spotify pelo computador.
+                     2. Clique nos 3 pontinhos (...) > Compartilhar > Incorporar faixa.
+                     3. Copie o código gerado e substitua os <iframe> abaixo. -->
+                
+                <!-- Música 1: EDEN - gggiiiiirrrrlllll (Azul) -->
+                <div class="transform hover:scale-105 transition-all duration-300 p-2 rounded-[16px] bg-blue-900/20 border border-blue-500/40 shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:shadow-[0_0_30px_rgba(59,130,246,0.4)]">
+                    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/4dRjFEqczXZpT7Z9RnytxU?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                </div>
+                
+                <!-- Música 2: Taylor Swift - The Fate of Ophelia (Verde) -->
+                <div class="transform hover:scale-105 transition-all duration-300 p-2 rounded-[16px] bg-green-900/20 border border-green-500/40 shadow-[0_0_20px_rgba(34,197,94,0.15)] hover:shadow-[0_0_30px_rgba(34,197,94,0.4)]">
+                    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/53iuhJlwXhSER5J2IYYv1W?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                </div>
+                
+                <!-- Música 3: Bruno Mars - Locked Out of Heaven (Amarelo) -->
+                <div class="transform hover:scale-105 transition-all duration-300 p-2 rounded-[16px] bg-yellow-900/20 border border-yellow-500/40 shadow-[0_0_20px_rgba(234,179,8,0.15)] hover:shadow-[0_0_30px_rgba(234,179,8,0.4)]">
+                    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/5g7sDjBhZ4I3gcFIpkrLuI?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SESSÃO 4: Poemas -->
+    <section id="poemas" class="py-24 bg-amber-50 relative border-b border-amber-100">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-serif text-amber-950 mb-4">Poemas que me lembram você</h2>
+                <div class="w-24 h-1 bg-amber-300 mx-auto rounded"></div>
+            </div>
+
+            <!-- Caixa Artística do Poema -->
+            <div class="max-w-3xl mx-auto bg-white p-8 md:p-14 rounded-2xl shadow-xl border border-amber-100">
+                <h3 class="text-3xl font-serif mb-1 text-amber-900">Seu Nome</h3>
+                <p class="text-sm md:text-base text-amber-600 mb-10 font-serif italic">Fabricio Corsaletti</p>
+                
+                <div class="space-y-6 text-stone-700 leading-loose text-lg font-serif">
+                    <p>
+                        se eu tivesse um bar ele teria o seu nome.<br>
+                        se eu tivesse um barco ele teria o seu nome.<br>
+                        se eu comprasse uma égua daria a ela o seu nome.<br>
+                        minha cadela imaginária tem o seu nome.<br>
+                        se eu enlouquecer passarei as tardes repetindo o seu nome.<br>
+                        se eu morrer velhinho, no suspiro final balbuciarei o seu nome.<br>
+                        se eu for assassinado com a boca cheia de sangue gritarei o seu nome.<br>
+                        se encontrarem o meu corpo boiando no mar no meu bolso haverá um bilhete com o seu nome.<br>
+                        se eu me suicidar ao puxar o gatilho pensarei no seu nome.<br>
+                        a primeira garota que beijei tinha o seu nome.
+                    </p>
+                    <p>
+                        na rua há mulheres que parecem ter o seu nome.<br>
+                        na locadora que frequento tem uma moça com o seu nome.<br>
+                        às vezes as nuvens quase formam o seu nome.<br>
+                        olhando as estrelas é sempre possível desenhar o seu nome.
+                    </p>
+                    <p>
+                        o último verso do famoso poema de Éluard poderia muito bem ser o seu nome.<br>
+                        Apollinaire escreveu poemas a Lou porque na loucura da guerra não conseguia lembrar o seu nome.<br>
+                        não entendo por que Chico Buarque não compôs uma música para o seu nome.<br>
+                        se eu fosse um travesti usaria o seu nome.<br>
+                        se um dia eu mudar de sexo adotarei o seu nome.<br>
+                        minha mãe me contou que se eu tivesse nascido menina teria o seu nome.<br>
+                        se eu tiver uma filha ela terá o seu nome.<br>
+                        minha senha do e-mail já foi o seu nome.
+                    </p>
+                    <p>
+                        tenho inveja do oficial de registro que datilografou pela primeira vez o seu nome.<br>
+                        quando fico bêbado falo muito o seu nome.<br>
+                        quando estou sóbrio me controlo para não falar demais o seu nome.<br>
+                        é difícil falar de você sem mencionar o seu nome.<br>
+                        uma vez sonhei que tudo no mundo tinha o seu nome.<br>
+                        coelho tinha o seu nome, xícara tinha o seu nome, teleférico tinha o seu nome.
+                    </p>
+                    <p>
+                        não posso ser niilista enquanto existir o seu nome.<br>
+                        não posso ser anarquista se isso implicar a degradação do seu nome.<br>
+                        não posso ser comunista se tiver que compartilhar o seu nome.<br>
+                        não posso ser fascista se não quero impor a outros o seu nome.<br>
+                        não posso ser capitalista se não desejo nada além do seu nome.
+                    </p>
+                    <p>
+                        quando saí da casa dos meus pais fui atrás do seu nome.<br>
+                        morei três anos num bairro que tinha o seu nome.<br>
+                        espero nunca deixar de te amar para não esquecer o seu nome.<br>
+                        espero que você nunca me deixe para eu não ser obrigado a esquecer o seu nome.<br>
+                        espero nunca te odiar para não ter que odiar o seu nome.<br>
+                        espero que você nunca me odeie para eu não ficar arrasado ao ouvir o seu nome.
+                    </p>
+                    <p>
+                        a literatura não me interessa tanto quanto o seu nome.<br>
+                        quando a poesia é boa é como o seu nome.<br>
+                        quando a poesia é ruim tem algo do seu nome.<br>
+                        talvez eu não seja um poeta à altura do seu nome.<br>
+                        por via das dúvidas vou acabar o poema sem dizer explicitamente o seu nome.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SESSÃO BÔNUS 1: Nossa História -->
+    <section id="historia" class="py-24 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-serif text-stone-800 mb-4">Nossa Linha do Tempo</h2>
+                <p class="text-stone-500 max-w-2xl mx-auto text-lg">Nossos momentos especiais até então.</p>
+            </div>
+
+            <div class="max-w-4xl mx-auto relative border-l-2 border-rose-200 pl-8 space-y-12 ml-4 md:ml-auto">
+                <!-- Evento 1 -->
+                <div class="relative">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 bg-rose-400 rounded-full border-4 border-white shadow"></div>
+                    <p class="text-sm font-bold text-rose-500 uppercase tracking-widest mb-1">O Dia em que nos conhecemos</p>
+                    <h4 class="text-2xl font-serif text-stone-800 mb-2">03/12/2025</h4>
+                    <p class="text-stone-600">Ainda sem interesse da minha parte, mas o universo tinha algo planejado pra gente. Quem diria que um mero jantar no RU chegaria no que é hoje.</p>
+                </div>
+                <!-- Evento 2 -->
+                <div class="relative">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 bg-rose-400 rounded-full border-4 border-white shadow"></div>
+                    <p class="text-sm font-bold text-rose-500 uppercase tracking-widest mb-1">O fatídico rolê no bar</p>
+                    <h4 class="text-2xl font-serif text-stone-800 mb-2">05/12/2025</h4>
+                    <p class="text-stone-600">O dia em que eu soltei o primeiro flerte e que tivemos nossa primeira conversa a sós, levemente alterados já na madrugada do outro dia.</p>
+                </div>
+                <!-- Evento 3 -->
+                <div class="relative">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 bg-rose-400 rounded-full border-4 border-white shadow"></div>
+                    <p class="text-sm font-bold text-rose-500 uppercase tracking-widest mb-1">Início de nós</p>
+                    <h4 class="text-2xl font-serif text-stone-800 mb-2">11/12/2025</h4>
+                    <p class="text-stone-600">Esse foi o dia do nosso primeiro selinho, em ADM, deppis de eu achar que tinha estragado tudo.</p>
+                </div>
+                <!-- Evento 4 -->
+                <div class="relative">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 bg-rose-400 rounded-full border-4 border-white shadow"></div>
+                    <p class="text-sm font-bold text-rose-500 uppercase tracking-widest mb-1">O primeiro date</p>
+                    <h4 class="text-2xl font-serif text-stone-800 mb-2">13/12/2025</h4>
+                    <p class="text-stone-600">Nosso primeiro date, naquele sábado depois do PROFICI, que te levei no Santiago no Shopping Barra.</p>
+                </div>
+                <!-- Evento 5 -->
+                <div class="relative">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 bg-rose-400 rounded-full border-4 border-white shadow"></div>
+                    <p class="text-sm font-bold text-rose-500 uppercase tracking-widest mb-1">O primeiro beijo</p>
+                    <h4 class="text-2xl font-serif text-stone-800 mb-2">18/12/2025</h4>
+                    <p class="text-stone-600">O primeiro beijo, na já nossa sala 307, já anoitecendo enquanto eu te ajudava com uma atividade de B11.</p>
+                </div>
+                <!-- Evento 6 -->
+                <div class="relative">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 bg-rose-400 rounded-full border-4 border-white shadow"></div>
+                    <p class="text-sm font-bold text-rose-500 uppercase tracking-widest mb-1">Minha defesa de TCC</p>
+                    <h4 class="text-2xl font-serif text-stone-800 mb-2">19/12/2025</h4>
+                    <p class="text-stone-600">Esse é o dia que você conhece meus pais depois de acompanhar o que talvez tenha sido minha maior conquista na vida até então, que foi finalizar a graduação.</p>
+                </div>
+                <!-- Evento 7 -->
+                <div class="relative">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 bg-rose-400 rounded-full border-4 border-white shadow"></div>
+                    <p class="text-sm font-bold text-rose-500 uppercase tracking-widest mb-1">A primeira vez na sua casa</p>
+                    <h4 class="text-2xl font-serif text-stone-800 mb-2">20/12/2025</h4>
+                    <p class="text-stone-600">A primeira vez que estivemos realmente a sós e nos entregamos ao desejo de estarmos um com o outro.</p>
+                </div>
+                <!-- Evento 8 -->
+                <div class="relative">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 bg-rose-400 rounded-full border-4 border-white shadow"></div>
+                    <p class="text-sm font-bold text-rose-500 uppercase tracking-widest mb-1">A nossa primeira vez</p>
+                    <h4 class="text-2xl font-serif text-stone-800 mb-2">08/03/2026</h4>
+                    <p class="text-stone-600">A primeira vez que dormimos juntos, depois de falarmos sobre inúmeras vezes por mensagens.</p>
+                </div>
+                <!-- Evento 9 -->
+                <div class="relative">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 bg-rose-400 rounded-full border-4 border-white shadow"></div>
+                    <p class="text-sm font-bold text-rose-500 uppercase tracking-widest mb-1">Eu te amo</p>
+                    <h4 class="text-2xl font-serif text-stone-800 mb-2">20/04/2026</h4>
+                    <p class="text-stone-600">O dia em que falamos "eu te amo" um para o outro pela primeira vez.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SESSÃO BÔNUS 2: Carta para Você -->
+    <section id="carta" class="py-24 bg-rose-50 text-center px-4">
+        <div class="max-w-2xl mx-auto">
+            <h2 class="text-4xl font-serif text-stone-800 mb-8">De Michell, para Ana Beatriz</h2>
+            <p class="text-lg text-stone-700 leading-relaxed font-serif italic mb-6">
+                "Amor, eu tive a ideia de criar essa espécie de museu virtual para que possamos sempre lembrar dos nossos momentos. Cada foto, cada música e cada palavra foram escolhidas pensando em tudo que você representa pra mim. Eu te amo MUITO."
+            </p>
+            <p class="text-stone-800 font-bold text-xl font-serif">— Michell</p>
+        </div>
+    </section>
+
+    <!-- Rodapé -->
+    <footer class="py-8 bg-zinc-900 text-center text-zinc-500 text-sm">
+        <p>Feito com todo o amor do mundo por Michell, para a sua Ana Beatriz. &copy; 2026</p>
+    </footer>
+
+    <!-- SCRIPT PARA GERAR A GALERIA DE 50 FOTOS AUTOMATICAMENTE -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const container = document.getElementById('galeria-container');
+            const totalFotos = 50;
+            const extensao = '.jpg'; // ATENÇÃO: Mude para '.png' ou '.jpeg' se as suas imagens forem desse formato
+            
+            // DICIONÁRIO DE LEGENDAS:
+            // Coloque o número da foto seguido da legenda desejada. 
+            // As fotos que não estiverem nesta lista terão a legenda padrão "Momento X".
+            const legendas = {
+                1: "O começo de tudo",
+                2: "Nossa primeira viagem",
+                15: "Aniversário dela",
+                50: "Até a eternidade",
+                // Adicione mais seguindo o padrão -> numero: "Sua legenda",
+            };
+
+            const getLegenda = (num) => legendas[num] || `Momento ${num}`;
+
+            const createMarqueeContent = () => {
+                const content = document.createElement('div');
+                content.className = 'marquee-content shrink-0';
+                
+                let colunas = '';
+                // Pula de 2 em 2 para colocar duas fotos em cada coluna vertical
+                for(let i = 1; i <= totalFotos; i += 2) {
+                    const isEvenCol = Math.ceil(i / 2) % 2 === 0;
+                    const paddingClass = isEvenCol ? 'pt-8' : ''; // Efeito quebrado do mosaico
+                    
+                    const foto1 = i;
+                    const foto2 = i + 1 <= totalFotos ? i + 1 : null;
+                    
+                    let colHtml = `<div class="flex flex-col gap-6 w-72 md:w-80 shrink-0 ${paddingClass}">`;
+                    
+                    // Estrutura da Primeira Foto da coluna
+                    colHtml += `
+                        <div class="bg-stone-50 p-3 md:p-4 border border-stone-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                            <img src="./img/foto${foto1}${extensao}" alt="Nosso momento ${foto1}" class="gallery-photo" loading="lazy">
+                            <p class="text-center font-serif text-sm md:text-base text-stone-600 italic mt-3">${getLegenda(foto1)}</p>
+                        </div>
+                    `;
+                    
+                    // Estrutura da Segunda Foto da coluna (se existir)
+                    if (foto2) {
+                        colHtml += `
+                            <div class="bg-stone-50 p-3 md:p-4 border border-stone-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                                <img src="./img/foto${foto2}${extensao}" alt="Nosso momento ${foto2}" class="gallery-photo" loading="lazy">
+                                <p class="text-center font-serif text-sm md:text-base text-stone-600 italic mt-3">${getLegenda(foto2)}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    colHtml += `</div>`;
+                    colunas += colHtml;
+                }
+                
+                content.innerHTML = colunas;
+                return content;
+            };
+
+            // Adiciona o bloco inteiro duas vezes para o efeito de rolagem infinita contínua
+            container.appendChild(createMarqueeContent());
+            container.appendChild(createMarqueeContent());
+        });
+    </script>
+</body>
+</html>
