@@ -228,8 +228,6 @@
         // ==========================================
         // 1. DICIONÁRIO DE DADOS DAS FOTOS
         // ==========================================
-        // Aqui você coloca as informações de cada foto (de 1 a 50).
-        // Se alguma foto não estiver aqui, ela terá um texto padrão bonito.
         const dadosFotos = {
             1: { titulo: "O Começo de Tudo", data: "15 de Janeiro de 2023", desc: "O dia em que nossos olhares se cruzaram de uma forma diferente. Aqui começou a nossa grande aventura." },
             2: { titulo: "Nosso Primeiro Passeio", data: "22 de Fevereiro de 2023", desc: "Aquele sorriso que me fez ter certeza de que eu queria te fazer sorrir para sempre." },
@@ -249,12 +247,10 @@
         let estadoZoom = false;
         let museuIniciado = false;
         
-        // Posições da Câmera
         let cameraZAtual = 0;
         let cameraZAlvo = 0;
-        const LIMITE_Z = -150; // Quão fundo o corredor vai (ajustado pelas 50 fotos)
+        const LIMITE_Z = -150; 
         
-        // Rotação da Câmera (Para olhar em volta)
         let mouseX = 0, mouseY = 0;
         let targetRotX = 0, targetRotY = 0;
 
@@ -265,7 +261,7 @@
             const overlay = document.getElementById('museu-overlay');
             overlay.style.display = 'block';
             setTimeout(() => overlay.style.opacity = '1', 10);
-            document.body.style.overflow = 'hidden'; // Trava o scroll do site por trás
+            document.body.style.overflow = 'hidden';
 
             if (!museuIniciado) {
                 iniciarThreeJS();
@@ -278,7 +274,7 @@
             overlay.style.opacity = '0';
             setTimeout(() => {
                 overlay.style.display = 'none';
-                document.body.style.overflow = 'auto'; // Libera o scroll
+                document.body.style.overflow = 'auto';
             }, 500);
         }
 
@@ -287,35 +283,41 @@
 
             // CENA E CÂMERA
             cena = new THREE.Scene();
-            cena.background = new THREE.Color(0x111111); // Escuro elegante
-            cena.fog = new THREE.Fog(0x111111, 10, 40); // Efeito de neblina no fundo do corredor
+            cena.background = new THREE.Color(0x0a0a0a); // Mais escuro e imersivo
+            cena.fog = new THREE.Fog(0x0a0a0a, 10, 35); // Neblina escondendo o fim do corredor
 
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-            camera.position.set(0, 1.6, 5); // Altura dos olhos
+            camera.position.set(0, 1.6, 5); 
             
-            renderizador = new THREE.WebGLRenderer({ antialias: true });
+            // OTIMIZAÇÃO: Pixel Ratio limitado para evitar lag em celulares 4K
+            renderizador = new THREE.WebGLRenderer({ antialias: false }); 
+            renderizador.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderizador.setSize(window.innerWidth, window.innerHeight);
-            renderizador.shadowMap.enabled = true;
+            // OTIMIZAÇÃO: Sombras desativadas (não precisamos delas para isso)
+            renderizador.shadowMap.enabled = false; 
             container.appendChild(renderizador.domElement);
 
-            // LUZES
-            const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.4);
+            // LUZES OTIMIZADAS (Adeus 50 SpotLights!)
+            const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.4); 
             cena.add(luzAmbiente);
 
-            // CONSTRUINDO O CORREDOR
+            // Uma luz atrelada à câmera. Ilumina apenas por onde você anda!
+            const luzCamera = new THREE.PointLight(0xfffae6, 0.8, 20);
+            camera.add(luzCamera);
+            cena.add(camera);
+
+            // CHÃO E PAREDES (Usando MeshLambertMaterial que é bem mais leve)
             const textureLoader = new THREE.TextureLoader();
             
-            // Chão
             const chaoGeometria = new THREE.PlaneGeometry(10, 200);
-            const chaoMaterial = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
+            const chaoMaterial = new THREE.MeshLambertMaterial({ color: 0x1a1a1a });
             const chao = new THREE.Mesh(chaoGeometria, chaoMaterial);
             chao.rotation.x = -Math.PI / 2;
             chao.position.z = -90;
             cena.add(chao);
 
-            // Paredes
             const paredeGeometria = new THREE.PlaneGeometry(200, 5);
-            const paredeMaterial = new THREE.MeshStandardMaterial({ color: 0xf5f5f0, roughness: 0.9 }); // Parede de galeria creme
+            const paredeMaterial = new THREE.MeshLambertMaterial({ color: 0x2a2a2a }); // Parede escura para destacar a foto
             
             const paredeEsq = new THREE.Mesh(paredeGeometria, paredeMaterial);
             paredeEsq.rotation.y = Math.PI / 2;
@@ -327,65 +329,60 @@
             paredeDir.position.set(5, 2.5, -90);
             cena.add(paredeDir);
 
-            // COLOCANDO AS 50 FOTOS NAS PAREDES
+            // COLOCANDO AS FOTOS
             const totalFotos = 50;
-            const espacamentoZ = 3; // Distância entre as fotos
+            const espacamentoZ = 4; // Mais espaço para respirar
             let zAtual = 0;
 
             for (let i = 1; i <= totalFotos; i++) {
-                // Alterna entre parede Esquerda e Direita
                 const ehEsquerda = i % 2 !== 0;
-                const posX = ehEsquerda ? -4.9 : 4.9;
+                // Ajustamos as posições: Moldura na parede (-4.95), Tela um pouquinho na frente (-4.90)
+                const posXFrame = ehEsquerda ? -4.95 : 4.95;
+                const posXFoto = ehEsquerda ? -4.90 : 4.90;
                 const rotY = ehEsquerda ? Math.PI / 2 : -Math.PI / 2;
                 
-                // Se for a próxima da esquerda, avança no corredor (eixo Z)
                 if (ehEsquerda && i > 1) zAtual -= espacamentoZ;
 
-                // Moldura
-                const molduraGeo = new THREE.BoxGeometry(0.1, 2.2, 2.2); // Caixa preta
-                const molduraMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+                // MOLDURA CORRIGIDA (Plano 2D ao invés de Caixa 3D)
+                // Tamanho inicial padrão, será reajustado ao carregar a textura
+                const molduraGeo = new THREE.PlaneGeometry(2.1, 2.1);
+                const molduraMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
                 const moldura = new THREE.Mesh(molduraGeo, molduraMat);
-                moldura.position.set(posX, 1.8, zAtual);
+                moldura.position.set(posXFrame, 1.8, zAtual);
                 moldura.rotation.y = rotY;
                 cena.add(moldura);
 
-                // Tela (Onde vai a foto)
+                // TELA DA FOTO (Usa material Basic para brilhar no escuro independentemente das luzes)
                 const telaGeo = new THREE.PlaneGeometry(2, 2);
-                const telaMat = new THREE.MeshBasicMaterial({ color: 0xdddddd }); // Cinza enquanto carrega
+                const telaMat = new THREE.MeshBasicMaterial({ color: 0x111111 }); 
                 const tela = new THREE.Mesh(telaGeo, telaMat);
-                
-                // Ajusta a tela um pouquinho pra frente da moldura
-                tela.position.set(ehEsquerda ? -4.84 : 4.84, 1.8, zAtual);
+                tela.position.set(posXFoto, 1.8, zAtual);
                 tela.rotation.y = rotY;
                 
-                // Salva os dados na malha para uso ao clicar
-                tela.userData = { id: i, alvoX: ehEsquerda ? -2 : 2, alvoZ: zAtual };
+                // Salva os dados para o Raycaster
+                tela.userData = { id: i, alvoX: ehEsquerda ? -3 : 3, alvoZ: zAtual };
                 obrasClicaveis.push(tela);
                 cena.add(tela);
 
-                // Luz direcional para iluminar a obra como num museu
-                const spotLight = new THREE.SpotLight(0xfffae6, 0.8);
-                spotLight.position.set(0, 4, zAtual);
-                spotLight.target = tela;
-                spotLight.angle = Math.PI / 6;
-                spotLight.penumbra = 0.5;
-                cena.add(spotLight);
-
-                // Carrega a textura (foto) e aplica na tela
+                // CARREGA A FOTO E AJUSTA O TAMANHO MAGICA-MENTE
                 textureLoader.load(`./img/foto${i}.jpg`, (textura) => {
+                    // Descobre a proporção (vertical ou horizontal)
+                    const proporcao = textura.image.width / textura.image.height;
+                    
+                    // Ajusta a geometria (Mantém altura de 2, ajusta largura)
+                    tela.geometry = new THREE.PlaneGeometry(2 * proporcao, 2);
+                    moldura.geometry = new THREE.PlaneGeometry((2 * proporcao) + 0.1, 2.1);
+                    
+                    // Aplica a foto
                     tela.material = new THREE.MeshBasicMaterial({ map: textura });
                 });
             }
 
-            // Oculta loading e mostra interface
             document.getElementById('loading-museu').style.display = 'none';
             document.getElementById('controles-museu').style.display = 'flex';
             document.getElementById('dica-uso').style.display = 'block';
 
-            // EVENTOS DE CONTROLE
             configurarControles();
-            
-            // INICIA O LOOP DE RENDERIZAÇÃO
             animar();
         }
 
@@ -393,52 +390,43 @@
         // 4. LÓGICA DE CONTROLES (MOVER E OLHAR)
         // ==========================================
         function configurarControles() {
-            // Mover para frente/trás (Botões)
             const moverCâmera = (direcao) => {
                 if (estadoZoom) return;
                 cameraZAlvo += direcao * 3;
-                // Trava os limites do corredor
                 if (cameraZAlvo > 5) cameraZAlvo = 5;
                 if (cameraZAlvo < LIMITE_Z) cameraZAlvo = LIMITE_Z;
             };
 
             document.getElementById('btn-frente').addEventListener('mousedown', () => moverCâmera(-1));
             document.getElementById('btn-tras').addEventListener('mousedown', () => moverCâmera(1));
-            // Suporte a touch para celular
             document.getElementById('btn-frente').addEventListener('touchstart', (e) => { e.preventDefault(); moverCâmera(-1); });
             document.getElementById('btn-tras').addEventListener('touchstart', (e) => { e.preventDefault(); moverCâmera(1); });
 
-            // Olhar ao redor com o Mouse (Desktop) ou Arrastar (Mobile)
             let isDragging = false;
-            let startX, startY;
 
             const onMove = (clientX, clientY) => {
                 if (estadoZoom) return;
-                // Converte posição do mouse em rotação (limite de movimento para não dar giro 360)
                 const x = (clientX / window.innerWidth) * 2 - 1;
                 const y = -(clientY / window.innerHeight) * 2 + 1;
-                targetRotY = -x * 0.8; // Gira a cabeça pros lados
-                targetRotX = y * 0.3;  // Gira a cabeça pra cima/baixo
+                targetRotY = -x * 0.8; 
+                targetRotX = y * 0.3;  
             };
 
             window.addEventListener('mousemove', (e) => onMove(e.clientX, e.clientY));
             
-            // Para celular: Arrasta o dedo na tela
             window.addEventListener('touchstart', (e) => {
                 isDragging = true;
-                startX = e.touches[0].clientX;
             });
             window.addEventListener('touchmove', (e) => {
-                if(isDragging) onMove(e.touches[0].clientX, window.innerHeight/2); // Y fixo no mobile pra facilitar
+                if(isDragging) onMove(e.touches[0].clientX, window.innerHeight/2); 
             });
             window.addEventListener('touchend', () => isDragging = false);
 
-            // SISTEMA DE CLIQUE NA OBRA (RAYCASTER)
             const raycaster = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
 
             const onClick = (clientX, clientY) => {
-                if (estadoZoom) return; // Se já tiver na placa, ignora
+                if (estadoZoom) return; 
                 
                 mouse.x = (clientX / window.innerWidth) * 2 - 1;
                 mouse.y = -(clientY / window.innerHeight) * 2 + 1;
@@ -454,9 +442,8 @@
 
             window.addEventListener('click', (e) => onClick(e.clientX, e.clientY));
             
-            // Lógica do botão Voltar da placa
             document.getElementById('btn-voltar-corredor').addEventListener('click', (e) => {
-                e.stopPropagation(); // Previne que o clique dispare o raycaster
+                e.stopPropagation(); 
                 sairDoZoom();
             });
         }
@@ -469,11 +456,9 @@
             const dados = tela.userData;
             const info = obterDadosObra(dados.id);
             
-            // Esconde botões de andar
             document.getElementById('controles-museu').style.display = 'none';
             document.getElementById('dica-uso').style.display = 'none';
 
-            // Anima câmera para a frente da foto
             gsap.to(camera.position, {
                 x: dados.alvoX, 
                 y: 1.8, 
@@ -482,20 +467,17 @@
                 ease: "power2.inOut"
             });
 
-            // Faz a câmera olhar exatamente para a foto
             gsap.to(camera.rotation, {
                 x: 0,
-                y: dados.alvoX < 0 ? Math.PI/2 : -Math.PI/2, // Olha pra esquerda ou direita
+                y: dados.alvoX < 0 ? Math.PI/2 : -Math.PI/2, 
                 z: 0,
                 duration: 1.5,
                 ease: "power2.inOut",
                 onComplete: () => {
-                    // Atualiza textos da placa
                     document.getElementById('placa-titulo').innerText = info.titulo;
                     document.getElementById('placa-data').innerText = info.data;
                     document.getElementById('placa-desc').innerText = info.desc;
                     
-                    // Mostra placa
                     const placa = document.getElementById('placa-obra');
                     placa.style.display = 'block';
                     setTimeout(() => placa.style.opacity = '1', 50);
@@ -504,21 +486,18 @@
         }
 
         function sairDoZoom() {
-            // Esconde Placa
             const placa = document.getElementById('placa-obra');
             placa.style.opacity = '0';
             setTimeout(() => placa.style.display = 'none', 300);
 
-            // Anima câmera de volta para o centro do corredor
             gsap.to(camera.position, {
                 x: 0, 
                 y: 1.6, 
-                z: cameraZAlvo, // Volta pro Z em que estava andando
+                z: cameraZAlvo, 
                 duration: 1.5,
                 ease: "power2.inOut"
             });
 
-            // Restaura rotação guiada pelo mouse
             gsap.to(camera.rotation, {
                 x: targetRotX,
                 y: targetRotY,
@@ -538,11 +517,9 @@
             requestAnimationFrame(animar);
             
             if (!estadoZoom) {
-                // Suaviza o movimento de andar (Efeito de deslizamento)
                 cameraZAtual += (cameraZAlvo - cameraZAtual) * 0.05;
                 camera.position.z = cameraZAtual;
 
-                // Suaviza o movimento de olhar a cabeça
                 camera.rotation.y += (targetRotY - camera.rotation.y) * 0.05;
                 camera.rotation.x += (targetRotX - camera.rotation.x) * 0.05;
             }
@@ -550,7 +527,6 @@
             renderizador.render(cena, camera);
         }
 
-        // Ajusta o tamanho da tela se mudar o tamanho da janela
         window.addEventListener('resize', () => {
             if(camera && renderizador) {
                 camera.aspect = window.innerWidth / window.innerHeight;
