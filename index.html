@@ -31,9 +31,9 @@
         #museu-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #000;
+            background-color: #fdfbf7; /* Fundo claro do overlay */
             z-index: 100;
-            display: none; /* Escondido até clicar no botão */
+            display: none;
             opacity: 0;
             transition: opacity 0.5s ease;
         }
@@ -48,10 +48,10 @@
             position: absolute;
             top: 50%; right: 5%;
             transform: translateY(-50%);
-            background: #fdfbf7;
+            background: #ffffff;
             padding: 2rem;
             border-radius: 8px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 0 0 1px #e5e5e5;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15), inset 0 0 0 1px #e5e5e5;
             width: 90%;
             max-width: 400px;
             display: none;
@@ -69,11 +69,11 @@
             }
         }
 
-        /* Controles de Navegação do Museu */
+        /* Controles de Navegação do Museu - Ajustados para fundo claro */
         .museu-btn {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.6); /* Botão escuro */
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
             color: white;
             padding: 12px 24px;
             border-radius: 30px;
@@ -83,7 +83,7 @@
             transition: all 0.3s;
         }
         .museu-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.8);
             transform: scale(1.05);
         }
 
@@ -91,7 +91,7 @@
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            color: white;
+            color: #333333; /* Texto escuro */
             font-family: 'Playfair Display', serif;
             text-align: center;
             font-size: 1.5rem;
@@ -123,7 +123,6 @@
 
     <!-- SESSÃO 2: A Porta do Museu (Nova Interface) -->
     <section id="galeria" class="py-32 bg-stone-900 border-t border-stone-800 text-center relative overflow-hidden">
-        <!-- Fundo de luzes -->
         <div class="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
             <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-yellow-600 rounded-full blur-[150px]"></div>
         </div>
@@ -194,8 +193,8 @@
         
         <!-- Tela de Carregamento -->
         <div id="loading-museu">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            Construindo as paredes do nosso museu...
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-800 mx-auto mb-4"></div>
+            Acendendo as luzes do museu...
         </div>
 
         <!-- Placa da Obra (Detalhes da Foto) -->
@@ -213,12 +212,12 @@
         </div>
 
         <!-- Dica de uso -->
-        <div id="dica-uso" class="absolute top-8 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black/50 px-4 py-2 rounded-full hidden text-center w-max max-w-[90%]">
+        <div id="dica-uso" class="absolute top-8 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black/60 px-4 py-2 rounded-full hidden text-center w-max max-w-[90%]">
             Arraste a tela para olhar aos lados. Clique em uma obra para aproximar.
         </div>
 
         <!-- Botão Fechar Museu -->
-        <button onclick="fecharMuseu()" class="absolute top-6 right-6 text-white bg-red-600/80 hover:bg-red-600 p-3 rounded-full shadow-lg z-50">
+        <button onclick="fecharMuseu()" class="absolute top-6 right-6 text-white bg-red-600/90 hover:bg-red-600 p-3 rounded-full shadow-lg z-50 transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
     </div>
@@ -249,7 +248,7 @@
         
         let cameraZAtual = 0;
         let cameraZAlvo = 0;
-        const LIMITE_Z = -150; 
+        const LIMITE_Z = -200; // Aumentado por causa do novo espaçamento
         
         let mouseX = 0, mouseY = 0;
         let targetRotX = 0, targetRotY = 0;
@@ -283,97 +282,97 @@
 
             // CENA E CÂMERA
             cena = new THREE.Scene();
-            cena.background = new THREE.Color(0x0a0a0a); // Mais escuro e imersivo
-            cena.fog = new THREE.Fog(0x0a0a0a, 10, 35); // Neblina escondendo o fim do corredor
+            // Cores Claras para o Museu! Tons pastéis/bege
+            cena.background = new THREE.Color(0xf5f5f0); 
+            cena.fog = new THREE.Fog(0xf5f5f0, 10, 40);
 
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
             camera.position.set(0, 1.6, 5); 
             
-            // OTIMIZAÇÃO: Pixel Ratio limitado para evitar lag em celulares 4K
             renderizador = new THREE.WebGLRenderer({ antialias: false }); 
             renderizador.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderizador.setSize(window.innerWidth, window.innerHeight);
-            // OTIMIZAÇÃO: Sombras desativadas (não precisamos delas para isso)
             renderizador.shadowMap.enabled = false; 
             container.appendChild(renderizador.domElement);
 
-            // LUZES OTIMIZADAS (Adeus 50 SpotLights!)
-            const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.4); 
+            // LUZES CLARAS
+            const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.7); // Luz geral forte
             cena.add(luzAmbiente);
 
-            // Uma luz atrelada à câmera. Ilumina apenas por onde você anda!
-            const luzCamera = new THREE.PointLight(0xfffae6, 0.8, 20);
-            camera.add(luzCamera);
-            cena.add(camera);
+            const luzHemisferio = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6); // Simula luz vindo do teto branco
+            cena.add(luzHemisferio);
 
-            // CHÃO E PAREDES (Usando MeshLambertMaterial que é bem mais leve)
+            // CHÃO E PAREDES
             const textureLoader = new THREE.TextureLoader();
             
-            const chaoGeometria = new THREE.PlaneGeometry(10, 200);
-            const chaoMaterial = new THREE.MeshLambertMaterial({ color: 0x1a1a1a });
+            const chaoGeometria = new THREE.PlaneGeometry(10, 250);
+            // Um tom de bege/madeira bem clarinha
+            const chaoMaterial = new THREE.MeshLambertMaterial({ color: 0xe6e0d4 });
             const chao = new THREE.Mesh(chaoGeometria, chaoMaterial);
             chao.rotation.x = -Math.PI / 2;
-            chao.position.z = -90;
+            chao.position.z = -100;
             cena.add(chao);
 
-            const paredeGeometria = new THREE.PlaneGeometry(200, 5);
-            const paredeMaterial = new THREE.MeshLambertMaterial({ color: 0x2a2a2a }); // Parede escura para destacar a foto
+            const paredeGeometria = new THREE.PlaneGeometry(250, 5);
+            // Paredes completamente brancas de museu de arte
+            const paredeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
             
             const paredeEsq = new THREE.Mesh(paredeGeometria, paredeMaterial);
             paredeEsq.rotation.y = Math.PI / 2;
-            paredeEsq.position.set(-5, 2.5, -90);
+            paredeEsq.position.set(-5, 2.5, -100);
             cena.add(paredeEsq);
 
             const paredeDir = new THREE.Mesh(paredeGeometria, paredeMaterial);
             paredeDir.rotation.y = -Math.PI / 2;
-            paredeDir.position.set(5, 2.5, -90);
+            paredeDir.position.set(5, 2.5, -100);
             cena.add(paredeDir);
 
             // COLOCANDO AS FOTOS
             const totalFotos = 50;
-            const espacamentoZ = 4; // Mais espaço para respirar
-            let zAtual = 0;
+            // Aumentei o espaçamento entre elas para não ficarem coladas
+            const espacamentoZ = 4.5; 
+            
+            // Aqui é o segredo: A câmera começa no Z = 5. 
+            // Começando a colocar a primeira foto no Z = -6, ela ficará a 11 metros de distância. 
+            // Bem na frente de quem entra, e não na lateral da orelha!
+            let zAtual = -6; 
 
             for (let i = 1; i <= totalFotos; i++) {
                 const ehEsquerda = i % 2 !== 0;
-                // Ajustamos as posições: Moldura na parede (-4.95), Tela um pouquinho na frente (-4.90)
                 const posXFrame = ehEsquerda ? -4.95 : 4.95;
                 const posXFoto = ehEsquerda ? -4.90 : 4.90;
                 const rotY = ehEsquerda ? Math.PI / 2 : -Math.PI / 2;
                 
                 if (ehEsquerda && i > 1) zAtual -= espacamentoZ;
 
-                // MOLDURA CORRIGIDA (Plano 2D ao invés de Caixa 3D)
-                // Tamanho inicial padrão, será reajustado ao carregar a textura
+                // MOLDURA DE MADEIRA
                 const molduraGeo = new THREE.PlaneGeometry(2.1, 2.1);
-                const molduraMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                // Cor: Marrom/Madeira escura e elegante
+                const molduraMat = new THREE.MeshLambertMaterial({ color: 0x5c3a21 });
                 const moldura = new THREE.Mesh(molduraGeo, molduraMat);
                 moldura.position.set(posXFrame, 1.8, zAtual);
                 moldura.rotation.y = rotY;
                 cena.add(moldura);
 
-                // TELA DA FOTO (Usa material Basic para brilhar no escuro independentemente das luzes)
+                // TELA DA FOTO
                 const telaGeo = new THREE.PlaneGeometry(2, 2);
-                const telaMat = new THREE.MeshBasicMaterial({ color: 0x111111 }); 
+                const telaMat = new THREE.MeshBasicMaterial({ color: 0xdddddd }); 
                 const tela = new THREE.Mesh(telaGeo, telaMat);
                 tela.position.set(posXFoto, 1.8, zAtual);
                 tela.rotation.y = rotY;
                 
-                // Salva os dados para o Raycaster
-                tela.userData = { id: i, alvoX: ehEsquerda ? -3 : 3, alvoZ: zAtual };
+                tela.userData = { id: i, alvoX: ehEsquerda ? -3.5 : 3.5, alvoZ: zAtual };
                 obrasClicaveis.push(tela);
                 cena.add(tela);
 
-                // CARREGA A FOTO E AJUSTA O TAMANHO MAGICA-MENTE
+                // CARREGA A FOTO E AJUSTA PROPORÇÃO
                 textureLoader.load(`./img/foto${i}.jpg`, (textura) => {
-                    // Descobre a proporção (vertical ou horizontal)
                     const proporcao = textura.image.width / textura.image.height;
                     
-                    // Ajusta a geometria (Mantém altura de 2, ajusta largura)
                     tela.geometry = new THREE.PlaneGeometry(2 * proporcao, 2);
-                    moldura.geometry = new THREE.PlaneGeometry((2 * proporcao) + 0.1, 2.1);
+                    // A moldura acompanha a largura da foto e deixa uma bordinha de madeira fina
+                    moldura.geometry = new THREE.PlaneGeometry((2 * proporcao) + 0.15, 2.15);
                     
-                    // Aplica a foto
                     tela.material = new THREE.MeshBasicMaterial({ map: textura });
                 });
             }
