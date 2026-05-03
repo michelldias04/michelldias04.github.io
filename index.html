@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
     
-    <!-- Bibliotecas 3D e Animação (SÃO O CORAÇÃO DO MUSEU) -->
+    <!-- Bibliotecas 3D e Animação -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
@@ -31,7 +31,7 @@
         #museu-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #fdfbf7; /* Fundo claro do overlay */
+            background-color: #fffaf0; /* Fundo quente do overlay */
             z-index: 100;
             display: none;
             opacity: 0;
@@ -43,7 +43,6 @@
             cursor: crosshair;
         }
 
-        /* Placa de Arte (Aparece ao clicar na foto) */
         #placa-obra {
             position: absolute;
             top: 50%; right: 5%;
@@ -56,7 +55,7 @@
             max-width: 400px;
             display: none;
             opacity: 0;
-            border-left: 4px solid #d97706; /* Detalhe dourado/âmbar */
+            border-left: 4px solid #d97706; 
         }
 
         @media (max-width: 768px) {
@@ -69,9 +68,8 @@
             }
         }
 
-        /* Controles de Navegação do Museu - Ajustados para fundo claro */
         .museu-btn {
-            background: rgba(0, 0, 0, 0.6); /* Botão escuro */
+            background: rgba(0, 0, 0, 0.6); 
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.1);
             color: white;
@@ -91,7 +89,7 @@
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            color: #333333; /* Texto escuro */
+            color: #333333; 
             font-family: 'Playfair Display', serif;
             text-align: center;
             font-size: 1.5rem;
@@ -121,7 +119,7 @@
         </div>
     </header>
 
-    <!-- SESSÃO 2: A Porta do Museu (Nova Interface) -->
+    <!-- SESSÃO 2: A Porta do Museu -->
     <section id="galeria" class="py-32 bg-stone-900 border-t border-stone-800 text-center relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
             <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-yellow-600 rounded-full blur-[150px]"></div>
@@ -185,19 +183,17 @@
     </footer>
 
     <!-- ========================================== -->
-    <!-- OVERLAY DO MUSEU 3D (A Mágica Acontece Aqui) -->
+    <!-- OVERLAY DO MUSEU 3D -->
     <!-- ========================================== -->
     <div id="museu-overlay">
         <!-- Canvas 3D -->
         <div id="canvas-container"></div>
         
-        <!-- Tela de Carregamento -->
         <div id="loading-museu">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-800 mx-auto mb-4"></div>
-            Acendendo as luzes do museu...
+            Construindo a galeria de arte...
         </div>
 
-        <!-- Placa da Obra (Detalhes da Foto) -->
         <div id="placa-obra">
             <p id="placa-data" class="text-amber-600 text-sm font-bold uppercase tracking-widest mb-1"></p>
             <h3 id="placa-titulo" class="text-2xl font-serif text-stone-800 mb-3"></h3>
@@ -205,18 +201,15 @@
             <button id="btn-voltar-corredor" class="mt-6 w-full py-2 bg-stone-900 text-white rounded hover:bg-stone-700 transition font-serif">Voltar a caminhar</button>
         </div>
 
-        <!-- Controles da Câmera na Tela -->
         <div id="controles-museu" class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-4 hidden">
             <button id="btn-tras" class="museu-btn">↓ Voltar</button>
             <button id="btn-frente" class="museu-btn">↑ Andar</button>
         </div>
 
-        <!-- Dica de uso -->
         <div id="dica-uso" class="absolute top-8 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black/60 px-4 py-2 rounded-full hidden text-center w-max max-w-[90%]">
             Arraste a tela para olhar aos lados. Clique em uma obra para aproximar.
         </div>
 
-        <!-- Botão Fechar Museu -->
         <button onclick="fecharMuseu()" class="absolute top-6 right-6 text-white bg-red-600/90 hover:bg-red-600 p-3 rounded-full shadow-lg z-50 transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
@@ -230,13 +223,49 @@
         const dadosFotos = {
             1: { titulo: "O Começo de Tudo", data: "15 de Janeiro de 2023", desc: "O dia em que nossos olhares se cruzaram de uma forma diferente. Aqui começou a nossa grande aventura." },
             2: { titulo: "Nosso Primeiro Passeio", data: "22 de Fevereiro de 2023", desc: "Aquele sorriso que me fez ter certeza de que eu queria te fazer sorrir para sempre." },
-            // Pode adicionar as 50 seguindo esse modelo!
         };
 
         const obterDadosObra = (id) => {
             if (dadosFotos[id]) return dadosFotos[id];
             return { titulo: `Nossa Memória #${id}`, data: "Momento Eternizado", desc: "Uma obra de arte que mostra um dos muitos momentos inesquecíveis que construímos lado a lado." };
         };
+
+        // ==========================================
+        // OTIMIZAÇÃO: GERADOR DE TEXTURA DE MADEIRA
+        // ==========================================
+        function criarTexturaMadeira() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+
+            // Fundo cor de madeira quente
+            ctx.fillStyle = '#8a5a3a';
+            ctx.fillRect(0, 0, 512, 512);
+
+            // Desenha as tábuas longitudinais
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#5c3a21';
+            for (let i = 0; i <= 512; i += 32) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, 512);
+                ctx.stroke();
+            }
+
+            // Adiciona um granulado sutil de madeira
+            for(let i=0; i<8000; i++) {
+                ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+                ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
+            }
+
+            const textura = new THREE.CanvasTexture(canvas);
+            textura.wrapS = THREE.RepeatWrapping;
+            textura.wrapT = THREE.RepeatWrapping;
+            // Repete a textura ao longo do chão do corredor
+            textura.repeat.set(8, 100); 
+            return textura;
+        }
 
         // ==========================================
         // 2. VARIÁVEIS GLOBAIS DO THREE.JS
@@ -248,7 +277,7 @@
         
         let cameraZAtual = 0;
         let cameraZAlvo = 0;
-        const LIMITE_Z = -200; // Aumentado por causa do novo espaçamento
+        const LIMITE_Z = -200; 
         
         let mouseX = 0, mouseY = 0;
         let targetRotX = 0, targetRotY = 0;
@@ -280,42 +309,60 @@
         function iniciarThreeJS() {
             const container = document.getElementById('canvas-container');
 
-            // CENA E CÂMERA
             cena = new THREE.Scene();
-            // Cores Claras para o Museu! Tons pastéis/bege
-            cena.background = new THREE.Color(0xf5f5f0); 
-            cena.fog = new THREE.Fog(0xf5f5f0, 10, 40);
+            // Tons super quentes de galeria de arte (Branco off-white)
+            cena.background = new THREE.Color(0xfff8ee); 
+            cena.fog = new THREE.Fog(0xfff8ee, 15, 50);
 
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
             camera.position.set(0, 1.6, 5); 
             
-            renderizador = new THREE.WebGLRenderer({ antialias: false }); 
+            renderizador = new THREE.WebGLRenderer({ antialias: true }); 
             renderizador.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderizador.setSize(window.innerWidth, window.innerHeight);
-            renderizador.shadowMap.enabled = false; 
             container.appendChild(renderizador.domElement);
 
-            // LUZES CLARAS
-            const luzAmbiente = new THREE.AmbientLight(0xffffff, 0.7); // Luz geral forte
+            // ILUMINAÇÃO DE GALERIA
+            const luzAmbiente = new THREE.AmbientLight(0xfff0dd, 0.6); // Luz quente geral
             cena.add(luzAmbiente);
 
-            const luzHemisferio = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6); // Simula luz vindo do teto branco
+            const luzHemisferio = new THREE.HemisphereLight(0xffffff, 0x5c3a21, 0.4); 
             cena.add(luzHemisferio);
 
-            // CHÃO E PAREDES
-            const textureLoader = new THREE.TextureLoader();
+            // Luz suave acompanhando o espectador para dar destaque na foto atual
+            const luzCamera = new THREE.PointLight(0xfff8e7, 0.5, 15);
+            camera.add(luzCamera);
+            cena.add(camera);
+
+            // ==================
+            // A ARQUITETURA
+            // ==================
             
+            // 1. O CHÃO (Usando a textura gerada e material Phong para dar brilho de cera)
             const chaoGeometria = new THREE.PlaneGeometry(10, 250);
-            // Um tom de bege/madeira bem clarinha
-            const chaoMaterial = new THREE.MeshLambertMaterial({ color: 0xe6e0d4 });
+            const texturaMadeira = criarTexturaMadeira();
+            const chaoMaterial = new THREE.MeshPhongMaterial({ 
+                map: texturaMadeira,
+                color: 0xddbb99, // Filtro quente em cima da madeira
+                shininess: 30,   // Brilho do chão
+                specular: 0x444444 // Reflexo da luz
+            });
             const chao = new THREE.Mesh(chaoGeometria, chaoMaterial);
             chao.rotation.x = -Math.PI / 2;
             chao.position.z = -100;
             cena.add(chao);
 
+            // 2. O TETO
+            const tetoGeometria = new THREE.PlaneGeometry(10, 250);
+            const tetoMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            const teto = new THREE.Mesh(tetoGeometria, tetoMaterial);
+            teto.rotation.x = Math.PI / 2;
+            teto.position.set(0, 5, -100); // Altura de 5 metros
+            cena.add(teto);
+
+            // 3. AS PAREDES
             const paredeGeometria = new THREE.PlaneGeometry(250, 5);
-            // Paredes completamente brancas de museu de arte
-            const paredeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            const paredeMaterial = new THREE.MeshLambertMaterial({ color: 0xfffaf0 }); // Cor de galeria (off-white)
             
             const paredeEsq = new THREE.Mesh(paredeGeometria, paredeMaterial);
             paredeEsq.rotation.y = Math.PI / 2;
@@ -327,51 +374,87 @@
             paredeDir.position.set(5, 2.5, -100);
             cena.add(paredeDir);
 
-            // COLOCANDO AS FOTOS
-            const totalFotos = 50;
-            // Aumentei o espaçamento entre elas para não ficarem coladas
-            const espacamentoZ = 4.5; 
+            // 4. OS RODAPÉS (Detalhe crucial para realismo)
+            const rodapeGeometria = new THREE.BoxGeometry(0.2, 0.4, 250);
+            const rodapeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff }); // Rodapé branco
             
-            // Aqui é o segredo: A câmera começa no Z = 5. 
-            // Começando a colocar a primeira foto no Z = -6, ela ficará a 11 metros de distância. 
-            // Bem na frente de quem entra, e não na lateral da orelha!
-            let zAtual = -6; 
+            const rodapeEsq = new THREE.Mesh(rodapeGeometria, rodapeMaterial);
+            rodapeEsq.position.set(-4.9, 0.2, -100);
+            cena.add(rodapeEsq);
+
+            const rodapeDir = new THREE.Mesh(rodapeGeometria, rodapeMaterial);
+            rodapeDir.position.set(4.9, 0.2, -100);
+            cena.add(rodapeDir);
+
+            // 5. OS TRILHOS DE ILUMINAÇÃO (No teto)
+            const trilhoGeometria = new THREE.BoxGeometry(0.2, 0.1, 250);
+            const trilhoMaterial = new THREE.MeshBasicMaterial({ color: 0x333333 }); // Trilho escuro
+            
+            const trilhoEsq = new THREE.Mesh(trilhoGeometria, trilhoMaterial);
+            trilhoEsq.position.set(-3, 4.95, -100);
+            cena.add(trilhoEsq);
+
+            const trilhoDir = new THREE.Mesh(trilhoGeometria, trilhoMaterial);
+            trilhoDir.position.set(3, 4.95, -100);
+            cena.add(trilhoDir);
+
+            // ==================
+            // AS OBRAS DE ARTE
+            // ==================
+            const textureLoader = new THREE.TextureLoader();
+            const totalFotos = 50;
+            const espacamentoZ = 5; // Bem espaçadas
+            let zAtual = -8; // Primeira foto bem na frente de quem entra
 
             for (let i = 1; i <= totalFotos; i++) {
                 const ehEsquerda = i % 2 !== 0;
-                const posXFrame = ehEsquerda ? -4.95 : 4.95;
-                const posXFoto = ehEsquerda ? -4.90 : 4.90;
                 const rotY = ehEsquerda ? Math.PI / 2 : -Math.PI / 2;
                 
                 if (ehEsquerda && i > 1) zAtual -= espacamentoZ;
 
-                // MOLDURA DE MADEIRA
+                // Sistema de camadas para evitar "Z-fighting" (Piscadas) e dar relevo
+                // Parede está no X = -5 (ou 5). 
+                const posFrame = ehEsquerda ? -4.95 : 4.95;
+                const posPasse = ehEsquerda ? -4.92 : 4.92;
+                const posFoto = ehEsquerda ? -4.90 : 4.90;
+
+                // 1. MOLDURA DE MADEIRA
                 const molduraGeo = new THREE.PlaneGeometry(2.1, 2.1);
-                // Cor: Marrom/Madeira escura e elegante
                 const molduraMat = new THREE.MeshLambertMaterial({ color: 0x5c3a21 });
                 const moldura = new THREE.Mesh(molduraGeo, molduraMat);
-                moldura.position.set(posXFrame, 1.8, zAtual);
+                moldura.position.set(posFrame, 2.0, zAtual); // Centro visual (Y=2.0)
                 moldura.rotation.y = rotY;
                 cena.add(moldura);
 
-                // TELA DA FOTO
-                const telaGeo = new THREE.PlaneGeometry(2, 2);
-                const telaMat = new THREE.MeshBasicMaterial({ color: 0xdddddd }); 
+                // 2. PASSE-PARTOUT (Margem Branca da Galeria)
+                const passeGeo = new THREE.PlaneGeometry(2, 2);
+                const passeMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+                const passe = new THREE.Mesh(passeGeo, passeMat);
+                passe.position.set(posPasse, 2.0, zAtual);
+                passe.rotation.y = rotY;
+                cena.add(passe);
+
+                // 3. TELA DA FOTO
+                const telaGeo = new THREE.PlaneGeometry(1.8, 1.8);
+                const telaMat = new THREE.MeshBasicMaterial({ color: 0xeeeeee }); 
                 const tela = new THREE.Mesh(telaGeo, telaMat);
-                tela.position.set(posXFoto, 1.8, zAtual);
+                tela.position.set(posFoto, 2.0, zAtual);
                 tela.rotation.y = rotY;
                 
-                tela.userData = { id: i, alvoX: ehEsquerda ? -3.5 : 3.5, alvoZ: zAtual };
+                tela.userData = { id: i, alvoX: ehEsquerda ? -3.0 : 3.0, alvoZ: zAtual };
                 obrasClicaveis.push(tela);
                 cena.add(tela);
 
-                // CARREGA A FOTO E AJUSTA PROPORÇÃO
+                // CARREGA E AJUSTA TAMANHOS DINAMICAMENTE
                 textureLoader.load(`./img/foto${i}.jpg`, (textura) => {
                     const proporcao = textura.image.width / textura.image.height;
                     
+                    // Ajusta a foto (Altura sempre = 2)
                     tela.geometry = new THREE.PlaneGeometry(2 * proporcao, 2);
-                    // A moldura acompanha a largura da foto e deixa uma bordinha de madeira fina
-                    moldura.geometry = new THREE.PlaneGeometry((2 * proporcao) + 0.15, 2.15);
+                    // Ajusta o passe-partout (0.1 maior de cada lado)
+                    passe.geometry = new THREE.PlaneGeometry((2 * proporcao) + 0.2, 2.2);
+                    // Ajusta a moldura (0.1 maior que o passe-partout)
+                    moldura.geometry = new THREE.PlaneGeometry((2 * proporcao) + 0.4, 2.4);
                     
                     tela.material = new THREE.MeshBasicMaterial({ map: textura });
                 });
@@ -386,7 +469,7 @@
         }
 
         // ==========================================
-        // 4. LÓGICA DE CONTROLES (MOVER E OLHAR)
+        // LÓGICA DE CONTROLES E ZOOM (MANTIDA)
         // ==========================================
         function configurarControles() {
             const moverCâmera = (direcao) => {
@@ -447,9 +530,6 @@
             });
         }
 
-        // ==========================================
-        // 5. ANIMAÇÕES DE ZOOM (GSAP) E PLACAS
-        // ==========================================
         function acionarZoomObra(tela) {
             estadoZoom = true;
             const dados = tela.userData;
@@ -460,7 +540,7 @@
 
             gsap.to(camera.position, {
                 x: dados.alvoX, 
-                y: 1.8, 
+                y: 2.0, 
                 z: dados.alvoZ,
                 duration: 1.5,
                 ease: "power2.inOut"
@@ -509,9 +589,6 @@
             });
         }
 
-        // ==========================================
-        // 6. LOOP DE ANIMAÇÃO DO MOTOR 3D
-        // ==========================================
         function animar() {
             requestAnimationFrame(animar);
             
